@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "fapp-scaffold",
-    "slug": "fapp-scaffold",
+    "name": "LifeOS",
+    "slug": "lifeos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "fappscaffold",
+    "scheme": "lifeos",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
@@ -32,6 +32,14 @@
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "color": "#6C5CE7",
+          "defaultChannel": "reminders"
         }
       ]
     ],
