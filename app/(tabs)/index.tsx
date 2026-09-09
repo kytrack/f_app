@@ -1,10 +1,78 @@
-import { Text, View } from 'react-native';
+import { format } from 'date-fns';
+import { hu } from 'date-fns/locale';
+import { Link } from 'expo-router';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { useDayClose } from '@/src/features/dayclose/useDayClose';
+import { HabitRow } from '@/src/features/habits/HabitRow';
+import { TaskRow } from '@/src/features/tasks/TaskRow';
+import { PointsHeader } from '@/src/features/today/PointsHeader';
+import { useToday } from '@/src/features/today/useToday';
+import { Card, EmptyState, IconButton, SectionTitle } from '@/src/ui/primitives';
 
-export default function IndexScreen() {
+export default function TodayScreen() {
+  useDayClose();
+  const { data, isLoading, refetch, isRefetching } = useToday();
+
+  if (isLoading || !data) return <View className="flex-1 bg-canvas dark:bg-canvas-dark" />;
+
+  const { habits, tasks, date, points } = data;
+  const open = [...tasks.overdue, ...tasks.due, ...tasks.anytime];
+  const habitsDone = habits.filter((h) => h.log?.status === 'done' || (h.habit.kind === 'bad' && h.log?.status !== 'relapse')).length;
+
   return (
-    <View className="flex-1 items-center justify-center gap-2 bg-canvas px-6 dark:bg-canvas-dark">
-      <Text className="text-2xl font-bold text-ink dark:text-ink-dark">Ma</Text>
-      <Text className="text-center text-ink-muted dark:text-ink-dark-muted">Napi szokások, teendők és pontok ide kerülnek (Fázis 1).</Text>
-    </View>
+    <ScrollView
+      className="flex-1 bg-canvas dark:bg-canvas-dark"
+      contentContainerClassName="px-4 pb-24 pt-2"
+      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
+      <Text className="mb-3 px-1 text-sm capitalize text-ink-muted dark:text-ink-dark-muted">
+        {format(new Date(), 'EEEE, MMMM d.', { locale: hu })}
+      </Text>
+      <PointsHeader todayNet={points.net} />
+
+      <SectionTitle
+        right={
+          <Link href={{ pathname: '/habit/[id]', params: { id: 'new' } }} asChild>
+            <IconButton label="+" />
+          </Link>
+        }>
+        Szokások · {habitsDone}/{habits.length}
+      </SectionTitle>
+      {habits.length === 0 ? (
+        <EmptyState title="Még nincs szokásod" body="Adj hozzá egyet a + gombbal. Például: víz, olvasás, dohányzásmentes nap." />
+      ) : (
+        <Card className="py-1">
+          {habits.map((item) => (
+            <HabitRow key={item.habit.id} item={item} date={date} />
+          ))}
+        </Card>
+      )}
+
+      <SectionTitle
+        right={
+          <Link href={{ pathname: '/task/[id]', params: { id: 'new' } }} asChild>
+            <IconButton label="+" />
+          </Link>
+        }>
+        Teendők · {tasks.completed.length}/{open.length + tasks.completed.length}
+      </SectionTitle>
+      {open.length === 0 && tasks.completed.length === 0 ? (
+        <EmptyState title="Nincs teendő" body="Szabad a nap, vagy vegyél fel egyet a + gombbal." />
+      ) : (
+        <Card className="py-1">
+          {tasks.overdue.map((t) => (
+            <TaskRow key={t.id} task={t} overdue />
+          ))}
+          {tasks.due.map((t) => (
+            <TaskRow key={t.id} task={t} />
+          ))}
+          {tasks.anytime.map((t) => (
+            <TaskRow key={t.id} task={t} />
+          ))}
+          {tasks.completed.map((t) => (
+            <TaskRow key={t.id} task={t} />
+          ))}
+        </Card>
+      )}
+    </ScrollView>
   );
 }

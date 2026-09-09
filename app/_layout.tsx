@@ -11,8 +11,10 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { db } from '@/src/db/client';
+import { DomainProvider } from '@/src/db/domain';
 import migrations from '@/src/db/migrations/migrations';
 import { ensureSeed } from '@/src/db/seed';
+import { palette } from '@/src/ui/tokens';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -64,19 +66,30 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RootLayoutNav />
+      <DomainProvider>
+        <RootLayoutNav />
+      </DomainProvider>
     </QueryClientProvider>
   );
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const p = palette(scheme);
+  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const theme = {
+    ...base,
+    colors: { ...base.colors, primary: p.accent, background: p.canvas, card: p.surface, text: p.text, border: p.line },
+  };
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+    <ThemeProvider value={theme}>
+      <Stack screenOptions={{ headerTitleStyle: { fontWeight: '700' } }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="habit/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="history" options={{ title: 'Pont-történet' }} />
       </Stack>
     </ThemeProvider>
   );

@@ -13,7 +13,7 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 - `src/domain/**` is PURE TypeScript: no React, no React Native, no Expo imports. It is unit-tested with Vitest (`npm test`) and must stay ≥90% covered.
 - Every point change goes through `src/domain/points` + the `point_ledger` table. The ledger is append-only: never UPDATE/DELETE a row, reverse with a compensating entry.
 - One user action = one SQLite transaction (log row + ledger row together).
-- Design tokens live only in `tailwind.config.js`; use `className`, not inline colors.
+- Design tokens live only in `design-tokens.js` (consumed by `tailwind.config.js` and `src/ui/tokens.ts`); use `className`, fall back to `palette()` only for props that cannot take a class.
 - Talk to the user in Hungarian, write code/comments/commits in English.
 
 ## Commands
@@ -26,4 +26,5 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 ## Layout
 - `app/` routes (Expo Router), `app/(tabs)/` the 5 tabs: index=Ma, calendar, workout, meals, rewards
 - `src/db/` schema, client, seed, migrations · `src/domain/` business rules · `src/features/` per-feature hooks+UI · `src/ui/` primitives
-- `tests/domain/` Vitest suites
+- `tests/domain/` Vitest suites; `tests/helpers/db.ts` builds a real sql.js SQLite with the migrations + a deterministic `DomainCtx`
+- Domain functions take a `DomainCtx` (db, userId, settings, now(), uuid()) – never import `src/db/client` from `src/domain`

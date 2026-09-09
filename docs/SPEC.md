@@ -1,6 +1,6 @@
 # LifeOS – személyes életviteli és napi szervező app (rendszerterv)
 
-> Verzió: 0.1 · Dátum: 2026-09-09 · Státusz: Fázis 0 kész, Fázis 1 (MVP) következik
+> Verzió: 0.1 · Dátum: 2026-09-09 · Státusz: Fázis 1 (MVP) kódja kész, telefonos próba következik
 > Célközönség: egyetlen felhasználó (saját használat), később opcionális szinkron/biztonsági mentés.
 
 ---
@@ -400,6 +400,15 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 
 **Egy tranzakció, egy művelet:** pipa = `habit_logs` upsert + `award()` egy SQLite tranzakcióban. Ha bármelyik hibázik, semmi nem íródik.
 
+### 4.3b Megvalósítási döntések (Fázis 1)
+
+- **Egyediség a főkönyvben:** a tervezett `uq_ledger_once` parciális unique index kikerült, mert egy sztornózott eredeti sor blokkolta volna az újra-jóváírást (pipa → unpipa → pipa). Helyette: az „aktív” bejegyzés (nem sztornó és nem mutat rá sztornó) egyediségét az `award()`/`penalize()` kód garantálja, és egy `uq_ledger_reverses` index biztosítja, hogy egy sort csak egyszer lehessen sztornózni.
+- **Számlált szokások arányos pontja:** `setActiveDelta()` – minden számláló-változásnál az aktív jóváírás pontosan `habitPoints(count, target)` értékre áll (sztornó + új sor, ha eltér).
+- **Visszaesés:** egy aktív levonás naponta, értéke `min(count × 2 × penalty, 30)`; a streak nullázása a napzárásban történik, így a visszaesés visszavonható.
+- **XP:** csak a nem sztornózott pozitív sorok összege, így a pipa/unpipa ciklus nem farmol XP-t.
+- **Heti N× szokás:** naponta nincs levonás; vasárnapi záráskor kvóta-ellenőrzés, hiány esetén egyszeri levonás + streak reset.
+- **Domain tesztelés:** a domain réteg `DomainCtx`-et kap (db, óra, uuid), így Node-ban sql.js-en ugyanazokkal a migrációkkal fut, mint a telefonon expo-sqlite-on.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:
@@ -469,14 +478,14 @@ Minden fázis végén: **működő, telefonra telepített app**. Becslés hobbi-
 - **Kész (2026-09-09):** tsc zöld, 24 domain-teszt zöld, `expo export --platform android` sikeres. Telefonon még nem futtatva. Eredeti kritérium: üres tab-os app fut a telefonon Expo Go-ban, `npm test` zöld egy dummy teszttel.
 
 ### Fázis 1 – MVP: pipa-rendszer + pontok (1–2 hét)
-- [ ] Séma: `habits`, `habit_logs`, `tasks`, `point_ledger`, `rewards`, `reward_redemptions`, `daily_summaries`.
-- [ ] `domain/points/*` + `dayClose.ts` **teszt-vezérelten** – ez a legfontosabb kód, itt előbb a tesztek: dupla pipa nem dupláz, un-check sztornóz, mulasztás büntet, streak 7-nél bónusz, relapse reset, redeem elutasít fedezet nélkül.
-- [ ] "Ma" képernyő: szokáslista (good: pipálás/számláló; bad: "tiszta vagyok" állapot + "visszaestem" gomb), mai teendők, pont-egyenleg fejléc, streak-jelző.
-- [ ] Szokás/teendő CRUD (bottom sheet form, zod validáció).
-- [ ] Jutalombolt: lista, költség, beváltás megerősítéssel, pont-történet (a főkönyv olvasható nézete).
-- [ ] Napzárás hívása app-aktiválódáskor.
-- [ ] Mikro-öröm: pipa animáció + haptika, "+10" lebegő címke.
-- **Kész, ha:** 1 hét valós használat után a főkönyv és a streak-ek konzisztensek, és a tesztek zöldek.
+- [x] Séma: `habits`, `habit_logs`, `tasks`, `point_ledger`, `rewards`, `reward_redemptions`, `daily_summaries`.
+- [x] `domain/points/*` + `dayClose.ts` **teszt-vezérelten** – ez a legfontosabb kód, itt előbb a tesztek: dupla pipa nem dupláz, un-check sztornóz, mulasztás büntet, streak 7-nél bónusz, relapse reset, redeem elutasít fedezet nélkül.
+- [x] "Ma" képernyő: szokáslista (good: pipálás/számláló; bad: "tiszta vagyok" állapot + "visszaestem" gomb), mai teendők, pont-egyenleg fejléc, streak-jelző.
+- [x] Szokás/teendő CRUD (bottom sheet form, zod validáció).
+- [x] Jutalombolt: lista, költség, beváltás megerősítéssel, pont-történet (a főkönyv olvasható nézete).
+- [x] Napzárás hívása app-aktiválódáskor.
+- [x] Mikro-öröm: pipa animáció + haptika, "+10" lebegő címke.
+- **Kész (2026-09-09):** 66 Vitest zöld (ledger, habits, tasks, rewards, dayClose valós SQLite-on sql.js-szel), domain lefedettség 97% sor, tsc zöld, Android bundle exportál. Telefonon még nem futtatva. Eredeti kritérium: 1 hét valós használat után a főkönyv és a streak-ek konzisztensek, és a tesztek zöldek.
 
 ### Fázis 2 – Naptár és értesítések (1 hét)
 - [ ] Séma: `events`, `event_reminders`, `scheduled_notifications`; `tasks.recurrence`, `domain/recurrence.ts` (napi / heti maszk / havi N-edik; nem teljes RRULE).

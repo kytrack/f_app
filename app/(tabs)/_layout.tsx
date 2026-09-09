@@ -2,9 +2,9 @@ import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 
-import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { palette } from '@/src/ui/tokens';
 
 type TabIcon = ComponentProps<typeof SymbolView>['name'];
 
@@ -37,12 +37,16 @@ const TABS: { name: string; title: string; icon: TabIcon }[] = [
 ];
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const p = palette(useColorScheme() === 'dark' ? 'dark' : 'light');
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
+        tabBarActiveTintColor: p.accent,
+        tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.line },
+        headerStyle: { backgroundColor: p.canvas },
+        headerShadowVisible: false,
+        headerTitleStyle: { fontWeight: '700', color: p.text },
         headerShown: useClientOnlyValue(false, true),
       }}>
       {TABS.map((tab) => (
