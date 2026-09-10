@@ -10,6 +10,8 @@ import type { TaskInput } from '@/src/domain/tasks';
 import { confirm, notifyError } from '@/src/ui/notify';
 import { useTask, useTaskActions } from '@/src/features/tasks/useTasks';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
+import { parseRecurrence } from '@/src/domain/recurrence';
+import { EMPTY_RECURRENCE, fromRecurrence, RecurrencePicker, toRecurrence, type RecurrenceForm } from '@/src/ui/RecurrencePicker';
 
 type Due = 'none' | 'today' | 'tomorrow' | 'custom';
 
@@ -44,16 +46,18 @@ function buildDueAt(f: Form, todayKey: string): string | null {
 }
 
 export default function TaskFormScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, day } = useLocalSearchParams<{ id: string; day?: string }>();
   const isNew = id === 'new';
   const { data: task } = useTask(isNew ? undefined : id);
   const { create, update, remove } = useTaskActions();
   const ctx = useDomain();
-  const [form, setForm] = useState<Form>(EMPTY);
+  const [form, setForm] = useState<Form>(() => (day ? { ...EMPTY, due: 'custom', customDate: day } : EMPTY));
+  const [recurrence, setRecurrence] = useState<RecurrenceForm>(EMPTY_RECURRENCE);
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
 
   useEffect(() => {
     if (task) {
+      setRecurrence(fromRecurrence(parseRecurrence(task.recurrence)));
       const due = task.dueAt ? new Date(task.dueAt) : null;
       setForm({
         title: task.title,
@@ -77,11 +81,22 @@ export default function TaskFormScreen() {
       return;
     }
     const v = parsed.data;
+    const rule = toRecurrence(recurrence);
+    const dueAt = buildDueAt(v, todayKey(ctx));
+    if (rule && !dueAt) {
+      setErrors({ due: 'Ismétlődő teendőhöz kell határidő' });
+      return;
+    }
+    if (rule?.type === 'weekly' && rule.weekdayMask === 0) {
+      setErrors({ due: 'Válassz legalább egy napot' });
+      return;
+    }
     const input: TaskInput = {
       title: v.title,
       notes: v.notes || null,
       priority: Number(v.priority),
-      dueAt: buildDueAt(v, todayKey(ctx)),
+      dueAt,
+      recurrence: rule,
     };
     const opts = {
       onSuccess: () => router.back(),
@@ -153,6 +168,12 @@ export default function TaskFormScreen() {
           </View>
         </View>
       ) : null}
+      <RecurrencePicker value={recurrence} onChange={setRecurrence} error={errors.due} />
+      {recurrence.kind !== 'none' ? (
+        <Text className="mb-4 text-xs text-ink-muted dark:text-ink-dark-muted">
+          Az ismétlődő teendő sablon: a következő 7 napra automatikusan létrejönnek a példányai, azokat pipálod.
+        </Text>
+      ) : null}
       <Field
         label="Jegyzet"
         value={form.notes}
@@ -162,7 +183,8 @@ export default function TaskFormScreen() {
         placeholder="opcionális"
       />
       <Text className="mb-4 text-xs text-ink-muted dark:text-ink-dark-muted">
-        Határidő után teljesítve a pont fele jár, lejárt és kész nélkül hagyott teendőért egyszer −5.
+        Határidő után teljesítve a pont fele jár, lejárt és kész nélkül hagyott teendőért egyszer −5. Egy órával a
+        határidő előtt emlékeztetőt kapsz.
       </Text>
       <Button title={isNew ? 'Létrehozás' : 'Mentés'} onPress={submit} disabled={create.isPending || update.isPending} />
       {!isNew ? <Button title="Törlés" variant="danger" className="mt-3" onPress={confirmDelete} /> : null}

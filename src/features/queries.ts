@@ -7,12 +7,16 @@ import { useMutation, useQueryClient, type UseMutationOptions } from '@tanstack/
 import { DomainError } from '@/src/domain/context';
 
 export const ROOT_KEY = ['lifeos'] as const;
+
+/** Listeners run after every successful domain mutation (e.g. notification re-planning). */
+export const onDomainChange = new Set<() => void>();
 export const keys = {
   today: (date: string) => [...ROOT_KEY, 'today', date] as const,
   points: () => [...ROOT_KEY, 'points'] as const,
   habit: (id: string) => [...ROOT_KEY, 'habit', id] as const,
   task: (id: string) => [...ROOT_KEY, 'task', id] as const,
   reward: (id: string) => [...ROOT_KEY, 'reward', id] as const,
+  event: (id: string) => [...ROOT_KEY, 'event', id] as const,
   shop: () => [...ROOT_KEY, 'shop'] as const,
   history: () => [...ROOT_KEY, 'history'] as const,
 };
@@ -28,6 +32,7 @@ export function useDomainMutation<TVars, TResult>(
     ...options,
     onSuccess: (data, vars, ctx, mutation) => {
       qc.invalidateQueries({ queryKey: ROOT_KEY });
+      onDomainChange.forEach((fn) => fn());
       options?.onSuccess?.(data, vars, ctx, mutation);
     },
   });

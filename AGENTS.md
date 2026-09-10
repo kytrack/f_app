@@ -23,6 +23,9 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 - `npm run db:generate` – after editing `src/db/schema.ts`, regenerates `src/db/migrations/*` (commit the output)
 - `npx expo export --platform android` – verifies the Metro/Babel/NativeWind chain without a device
 - **Web preview** (no device needed): `npx expo export --platform web --output-dir dist-web` then `node scripts/serve-web-dist.js` → http://localhost:3000. Must be a production export: expo-sqlite on web runs in a worker chunk that `expo start` (single bundle) cannot emit. The static server adds the COOP/COEP headers SharedArrayBuffer needs. `patches/expo-sqlite+57.0.2.patch` (applied by `postinstall`) fixes the web sync bridge truncating results longer than 255 bytes – keep it until upstream fixes `WorkerChannel.ts`.
+- Notifications: the plan lives in `src/domain/notifications.ts` (pure, tested); `src/notifications/scheduler.ts` only diffs it against the OS queue by `data.key`. Never schedule notifications anywhere else. Web has no notifications (guarded by `isNativeNotifications`).
+- Two day concepts: habits/day-close/summary use the LOGICAL day (`todayKey`, 04:00 start); events and the calendar tab use the CALENDAR day (`calendarKeyFor`). Do not mix them.
+- Recurring tasks are templates (`recurrence` set) + generated instances (`parent_task_id`); lists must filter `recurrence IS NULL`.
 - `Alert` is a no-op on web: use `notify()`/`confirm()` from `src/ui/notify.ts`, never `Alert.alert` directly.
 
 ## Layout

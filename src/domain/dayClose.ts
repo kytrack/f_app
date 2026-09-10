@@ -18,7 +18,7 @@ import { scheduledHabitsOn } from './habits';
 import { award, penalize, pointsForDay } from './points/ledger';
 import { POINTS } from './points/rules';
 import { milestoneBonus, multiplierFor, nextStreak, type DayOutcome } from './points/streak';
-import { taskDayKey } from './tasks';
+import { materializeRecurringTasks, taskDayKey } from './tasks';
 
 export function isDayClosed(ctx: DomainCtx, date: DayKey): boolean {
   return !!ctx.db
@@ -178,6 +178,7 @@ export function closeDay(ctx: DomainCtx, date: DayKey): DailySummary | null {
           eq(tasks.userId, c.userId),
           isNull(tasks.deletedAt),
           isNull(tasks.completedAt),
+          isNull(tasks.recurrence),
           isNotNull(tasks.dueAt),
           isNull(tasks.overduePenalizedAt),
         ),
@@ -193,7 +194,7 @@ export function closeDay(ctx: DomainCtx, date: DayKey): DailySummary | null {
     const allTasks = tx
       .select()
       .from(tasks)
-      .where(and(eq(tasks.userId, c.userId), isNull(tasks.deletedAt)))
+      .where(and(eq(tasks.userId, c.userId), isNull(tasks.deletedAt), isNull(tasks.recurrence)))
       .all();
     const dueToday = allTasks.filter((t) => taskDayKey(c, t) === date);
     const tasksDue = dueToday.length;
@@ -254,8 +255,17 @@ function firstActivityDay(ctx: DomainCtx): DayKey | null {
   return keys.length ? keys.sort()[0] : null;
 }
 
-/** Settles every unsettled day up to yesterday, oldest first. Returns the closed dates. */
+/**
+ * Settles every unsettled day up to yesterday, oldest first, then materialises upcoming
+ * recurring tasks. Returns the closed dates.
+ */
 export function closePendingDays(ctx: DomainCtx): DayKey[] {
+  const closed = settlePendingDays(ctx);
+  materializeRecurringTasks(ctx);
+  return closed;
+}
+
+function settlePendingDays(ctx: DomainCtx): DayKey[] {
   const last = ctx.db
     .select({ date: dailySummaries.date })
     .from(dailySummaries)

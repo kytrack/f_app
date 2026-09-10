@@ -1,6 +1,6 @@
 # LifeOS – személyes életviteli és napi szervező app (rendszerterv)
 
-> Verzió: 0.1 · Dátum: 2026-09-09 · Státusz: Fázis 1 (MVP) kódja kész, telefonos próba következik
+> Verzió: 0.1 · Dátum: 2026-09-09 · Státusz: Fázis 2 (naptár + értesítések) kódja kész, telefonos próba következik
 > Célközönség: egyetlen felhasználó (saját használat), később opcionális szinkron/biztonsági mentés.
 
 ---
@@ -410,6 +410,15 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Webes előnézet (2026-09-11):** production web export + `scripts/serve-web-dist.js` (COOP/COEP fejlécek). Két upstream-korlát: a dev szerver nem tud worker chunkot adni (ezért export kell), és az expo-sqlite webes szinkron hídja 255 bájt fölött csonkolta a választ – `patches/expo-sqlite+57.0.2.patch` javítja. Weben az `Alert` néma, ezért `src/ui/notify.ts`. A böngészős próbán (00:10-kor!) két napkezdet-hiba derült ki és lett javítva: a fejléc és a teendő „Ma” előbeállítása a naptári nap helyett a logikai napot használja.
 - **Domain tesztelés:** a domain réteg `DomainCtx`-et kap (db, óra, uuid), így Node-ban sql.js-en ugyanazokkal a migrációkkal fut, mint a telefonon expo-sqlite-on.
 
+### 4.3c Megvalósítási döntések (Fázis 2)
+
+- **Nincs `scheduled_notifications` tükörtábla.** Az OS várólistája az igazság; az app minden DB-változás után (1,5 s debounce) és előtérbe kerüléskor újraszámolja a tervet (`domain/notifications.ts`, tiszta TS, tesztelt) és diffeli az `getAllScheduledNotificationsAsync()` eredményével a `key` alapján. Így nincs mit szinkronban tartani.
+- **Két naptár-fogalom:** szokások, napzárás, összegző a **logikai napot** követik (04:00 kezdet); események és a naptár-nézet a **naptári napot** (faliórát). Teendők határideje a logikai nap szerint sorolódik (ahogy a Ma képernyőn), így 02:00-s határidő az előző nap listájában van.
+- **Ismétlődő teendő = sablon + példányok.** A `recurrence` JSON-t hordozó teendő sablon (listákban nem jelenik meg), a példányok `parent_task_id`-val jönnek létre ma+7 napra (`materializeRecurringTasks`, a napzárás és minden mentés után). Szabályváltásnál a nyitott jövőbeli példányok törlődnek és újragenerálódnak; a felhasználó által törölt előfordulás (soft delete) nem jön vissza.
+- **RRULE-light:** `daily(interval)`, `weekly(mask)`, `monthly(day, rövid hónapra csippentve)`; horgony = az első előfordulás napja.
+- **Emlékeztetők:** szokás `reminder_time` csak ütemezett napon és amíg nincs pipálva; esemény per offset (0/15/60/1440 perc); teendő 60 perccel a határidő előtt; esti összegző 20:00 (mai darabszámmal). Max 60 ütemezett (iOS 64-es plafon), 7 napra előre.
+- **Expo Go korlát:** helyi értesítés Expo Go-ban Androidon működik, távoli push nem – nekünk csak helyi kell.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:
@@ -489,11 +498,11 @@ Minden fázis végén: **működő, telefonra telepített app**. Becslés hobbi-
 - **Kész (2026-09-09):** 66 Vitest zöld (ledger, habits, tasks, rewards, dayClose valós SQLite-on sql.js-szel), domain lefedettség 97% sor, tsc zöld, Android bundle exportál. Telefonon még nem futtatva. Eredeti kritérium: 1 hét valós használat után a főkönyv és a streak-ek konzisztensek, és a tesztek zöldek.
 
 ### Fázis 2 – Naptár és értesítések (1 hét)
-- [ ] Séma: `events`, `event_reminders`, `scheduled_notifications`; `tasks.recurrence`, `domain/recurrence.ts` (napi / heti maszk / havi N-edik; nem teljes RRULE).
-- [ ] Naptár tab: heti csík felül + napi lista (események + esedékes teendők + tervezett edzés). Havi nézet **nem** kell MVP-ben.
-- [ ] `notifications/scheduler.ts` reconcile, engedélykérés, channel-ek, deep link.
-- [ ] Napi összegző értesítés (20:00): hány szokás maradt.
-- **Kész, ha:** zárt telefonon is jön az emlékeztető, koppintásra a megfelelő képernyő nyílik, a ledger-tesztek zöldek.
+- [x] Séma: `events`, `event_reminders`, `scheduled_notifications`; `tasks.recurrence`, `domain/recurrence.ts` (napi / heti maszk / havi N-edik; nem teljes RRULE).
+- [x] Naptár tab: heti csík felül + napi lista (események + esedékes teendők + tervezett edzés). Havi nézet **nem** kell MVP-ben.
+- [x] `notifications/scheduler.ts` reconcile, engedélykérés, channel-ek, deep link.
+- [x] Napi összegző értesítés (20:00): hány szokás maradt.
+- **Kész (2026-09-11):** 89 Vitest zöld (recurrence, events, ismétlődő teendők, értesítés-terv), tsc zöld, Android + web export sikeres, naptár és űrlapok böngészőben kipróbálva. Telefonon (értesítés zárt képernyőn, deep link) még nem ellenőrizve. Eredeti kritérium: zárt telefonon is jön az emlékeztető, koppintásra a megfelelő képernyő nyílik, a ledger-tesztek zöldek.
 
 ### Fázis 3 – Edzés és étkezés (1–2 hét)
 - [ ] Séma: `exercises`, `workout_plans`, `workout_plan_exercises`, `workout_sessions`, `set_logs`.

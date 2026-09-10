@@ -20,6 +20,7 @@ const schema = z.object({
   icon: z.string().trim().max(4),
   pointsSuccess: z.coerce.number().int().min(1).max(500),
   pointsPenalty: z.coerce.number().int().min(0).max(500),
+  reminderTime: z.string().regex(/^\d{2}:\d{2}$/, 'ÓÓ:PP formátum').or(z.literal('')),
 });
 type Form = z.infer<typeof schema>;
 
@@ -34,6 +35,7 @@ const EMPTY: Form = {
   icon: '',
   pointsSuccess: 10,
   pointsPenalty: 5,
+  reminderTime: '',
 };
 
 export default function HabitFormScreen() {
@@ -57,6 +59,7 @@ export default function HabitFormScreen() {
         icon: habit.icon ?? '',
         pointsSuccess: habit.pointsSuccess,
         pointsPenalty: habit.pointsPenalty,
+        reminderTime: habit.reminderTime ?? '',
       });
     }
   }, [habit]);
@@ -83,6 +86,7 @@ export default function HabitFormScreen() {
       icon: v.icon || null,
       pointsSuccess: v.pointsSuccess,
       pointsPenalty: v.pointsPenalty,
+      reminderTime: v.kind === 'good' && v.reminderTime ? v.reminderTime : null,
     };
     const opts = {
       onSuccess: () => router.back(),
@@ -224,6 +228,16 @@ export default function HabitFormScreen() {
         </View>
       </View>
 
+      {!isBad ? (
+        <Field
+          label="Emlékeztető (ÓÓ:PP)"
+          value={form.reminderTime}
+          onChangeText={(t) => set('reminderTime', t)}
+          placeholder="21:00"
+          hint="Üresen hagyva nincs értesítés. Csak az ütemezett napokon, és csak amíg nincs kipipálva."
+          error={errors.reminderTime}
+        />
+      ) : null}
       <Button title={isNew ? 'Létrehozás' : 'Mentés'} onPress={submit} disabled={create.isPending || update.isPending} />
       {!isNew ? <Button title="Archiválás" variant="danger" className="mt-3" onPress={confirmArchive} /> : null}
     </ScrollView>

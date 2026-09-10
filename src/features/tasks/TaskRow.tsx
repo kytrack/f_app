@@ -47,7 +47,10 @@ export function TaskRow({ task, overdue = false }: { task: Task; overdue?: boole
                 {format(new Date(task.dueAt), overdue ? 'MMM d. HH:mm' : 'HH:mm', { locale: hu })}
               </Text>
             ) : null}
-            <Text className="text-xs text-ink-muted dark:text-ink-dark-muted">{PRIORITY_LABEL[task.priority]}</Text>
+            <Text className="text-xs text-ink-muted dark:text-ink-dark-muted">
+              {PRIORITY_LABEL[task.priority]}
+              {task.parentTaskId ? ' · ↻' : ''}
+            </Text>
           </View>
         </Pressable>
       </Link>

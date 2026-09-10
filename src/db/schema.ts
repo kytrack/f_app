@@ -121,6 +121,39 @@ export const tasks = sqliteTable(
   (t) => [index('idx_tasks_due').on(t.dueAt)],
 );
 
+// ---------------------------------------------------------------- calendar
+
+export const events = sqliteTable(
+  'events',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    title: text('title').notNull(),
+    notes: text('notes'),
+    location: text('location'),
+    startAt: text('start_at').notNull(), // ISO datetime; for all-day events the local 00:00
+    endAt: text('end_at'),
+    allDay: integer('all_day', { mode: 'boolean' }).notNull().default(false),
+    recurrence: text('recurrence'), // JSON Recurrence (src/domain/recurrence.ts) or NULL
+    color: text('color'),
+    linkedTaskId: text('linked_task_id').references(() => tasks.id),
+    deletedAt: text('deleted_at'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_events_start').on(t.startAt)],
+);
+
+export const eventReminders = sqliteTable('event_reminders', {
+  id: text('id').primaryKey(),
+  eventId: text('event_id')
+    .notNull()
+    .references(() => events.id, { onDelete: 'cascade' }),
+  offsetMinutes: integer('offset_minutes').notNull(), // 0, 15, 60, 1440 …
+});
+
 // ---------------------------------------------------------------- gamification
 
 export const LEDGER_REASONS = [
@@ -234,6 +267,9 @@ export type NewHabit = typeof habits.$inferInsert;
 export type HabitLog = typeof habitLogs.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
+export type Event = typeof events.$inferSelect;
+export type NewEvent = typeof events.$inferInsert;
+export type EventReminder = typeof eventReminders.$inferSelect;
 export type LedgerEntry = typeof pointLedger.$inferSelect;
 export type Reward = typeof rewards.$inferSelect;
 export type NewReward = typeof rewards.$inferInsert;

@@ -28,6 +28,23 @@ export function isBitSet(mask: number, weekday: number): boolean {
   return (mask & (1 << weekday)) !== 0;
 }
 
+/** Wall-clock 'HH:MM' of an instant in the user's time zone. */
+export function localTime(instant: Date, timeZone: string): string {
+  return format(new TZDate(instant, timeZone), 'HH:mm');
+}
+
+/** The instant at 'HH:MM' local time on a calendar day key, in the user's time zone. */
+export function instantFor(key: DayKey, time: string, timeZone: string): Date {
+  const [y, m, d] = key.split('-').map(Number);
+  const [hh, mm] = time.split(':').map(Number);
+  return new Date(new TZDate(y, m - 1, d, hh, mm, 0, timeZone).getTime());
+}
+
+/** Calendar day key of an instant in the user's time zone (NOT the logical day). */
+export function calendarKeyFor(instant: Date, timeZone: string): DayKey {
+  return format(new TZDate(instant, timeZone), 'yyyy-MM-dd');
+}
+
 /** Every day key in [from, to], inclusive, ascending. */
 export function dayRange(from: DayKey, to: DayKey): DayKey[] {
   const out: DayKey[] = [];

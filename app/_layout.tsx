@@ -14,6 +14,7 @@ import { getDb, prepareDatabase } from '@/src/db/client';
 import { DomainProvider } from '@/src/db/domain';
 import migrations from '@/src/db/migrations/migrations';
 import { ensureSeed } from '@/src/db/seed';
+import { useNotifications } from '@/src/notifications/useNotifications';
 import { palette } from '@/src/ui/tokens';
 
 export {
@@ -88,6 +89,7 @@ function Migrator({ children }: { children: ReactNode }) {
 }
 
 function RootLayoutNav() {
+  useNotifications();
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const p = palette(scheme);
   const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
@@ -103,6 +105,7 @@ function RootLayoutNav() {
         <Stack.Screen name="habit/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="event/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="history" options={{ title: 'Pont-történet' }} />
       </Stack>
     </ThemeProvider>
