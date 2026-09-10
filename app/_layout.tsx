@@ -106,6 +106,13 @@ function RootLayoutNav() {
         <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="event/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="workout/plan/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="workout/session/[id]" />
+        <Stack.Screen name="meal/pick" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="meal/template/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="meal/templates" />
+        <Stack.Screen name="meal/plan" />
+        <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
         <Stack.Screen name="history" options={{ title: 'Pont-történet' }} />
       </Stack>
     </ThemeProvider>

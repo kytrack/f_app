@@ -26,6 +26,7 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 - Notifications: the plan lives in `src/domain/notifications.ts` (pure, tested); `src/notifications/scheduler.ts` only diffs it against the OS queue by `data.key`. Never schedule notifications anywhere else. Web has no notifications (guarded by `isNativeNotifications`).
 - Two day concepts: habits/day-close/summary use the LOGICAL day (`todayKey`, 04:00 start); events and the calendar tab use the CALENDAR day (`calendarKeyFor`). Do not mix them.
 - Recurring tasks are templates (`recurrence` set) + generated instances (`parent_task_id`); lists must filter `recurrence IS NULL`.
+- Workouts: `src/domain/workouts.ts` (plans → sessions → set_logs; points only in `finishSession`). Meals: `src/domain/meals.ts` (templates → weekly plan → snapshot logs; kcal points only in day close). Settings edits must go through `useSettingsActions` so the DomainCtx snapshot is rebuilt.
 - `Alert` is a no-op on web: use `notify()`/`confirm()` from `src/ui/notify.ts`, never `Alert.alert` directly.
 
 ## Layout

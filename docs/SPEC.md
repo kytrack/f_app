@@ -1,6 +1,6 @@
 # LifeOS – személyes életviteli és napi szervező app (rendszerterv)
 
-> Verzió: 0.1 · Dátum: 2026-09-09 · Státusz: Fázis 2 (naptár + értesítések) kódja kész, telefonos próba következik
+> Verzió: 0.1 · Dátum: 2026-09-09 · Státusz: Fázis 3 (edzés + étkezés) kódja kész, telefonos próba következik
 > Célközönség: egyetlen felhasználó (saját használat), később opcionális szinkron/biztonsági mentés.
 
 ---
@@ -419,6 +419,14 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Emlékeztetők:** szokás `reminder_time` csak ütemezett napon és amíg nincs pipálva; esemény per offset (0/15/60/1440 perc); teendő 60 perccel a határidő előtt; esti összegző 20:00 (mai darabszámmal). Max 60 ütemezett (iOS 64-es plafon), 7 napra előre.
 - **Expo Go korlát:** helyi értesítés Expo Go-ban Androidon működik, távoli push nem – nekünk csak helyi kell.
 
+### 4.3d Megvalósítási döntések (Fázis 3)
+
+- **Edzés = terv + munkamenet.** Indításkor a terv minden gyakorlatához előre létrejönnek a szett-sorok, súly/ismétlés az adott gyakorlat **utolsó befejezett** teljesítményéből előtöltve (különben a terv célja). Befejezéskor `completion_pct` = kész/összes szett, pont a 4.1 szerinti sávokkal (≥80% teljes, 50–79% fele). Újranyitás sztornózza a pontot; elvetés csak nyitott munkamenetre.
+- **Étkezés-napló snapshotokkal:** a heti étrend (`meal_plan_items`, hétfő=0) napi `meal_logs` sorokká válik (`plan_item_id` az idempotenciához), a név/kcal/makró pillanatkép, így a sablon későbbi módosítása nem írja át a múltat. Ad hoc tétel = sablonból vagy egyedi név+kcal, azonnal „megevett”. Tervezett tétel nem törölhető, csak kipipálható/visszavonható.
+- **Napzárás:** a nap kcal-ja csak akkor értékelődik, ha van legalább egy megevett tétel; találat +20, túllépés −10, alullét semleges. `workout_done` = van ≥50%-os befejezett munkamenet. A zárás a mai és a holnapi napra is legenerálja az étrend tételeit, a Kaja képernyő pedig megnyitáskor a mait.
+- **Napzárás indulási napja:** a telepítés napja (users.created_at), minden nap kap összegző sort (üres nap nullákkal) – korábban az első szokás/teendő napjától indult.
+- **Beállítások képernyő** (kcal-cél, makrók, tolerancia, napkezdet óra, próba-értesítés). A `DomainCtx` beállítás-pillanatkép mentés után újraépül (`onSettingsChange`).
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:
@@ -505,12 +513,12 @@ Minden fázis végén: **működő, telefonra telepített app**. Becslés hobbi-
 - **Kész (2026-09-11):** 89 Vitest zöld (recurrence, events, ismétlődő teendők, értesítés-terv), tsc zöld, Android + web export sikeres, naptár és űrlapok böngészőben kipróbálva. Telefonon (értesítés zárt képernyőn, deep link) még nem ellenőrizve. Eredeti kritérium: zárt telefonon is jön az emlékeztető, koppintásra a megfelelő képernyő nyílik, a ledger-tesztek zöldek.
 
 ### Fázis 3 – Edzés és étkezés (1–2 hét)
-- [ ] Séma: `exercises`, `workout_plans`, `workout_plan_exercises`, `workout_sessions`, `set_logs`.
-- [ ] Edzés tab: mai terv (weekday_mask) → "Start" → szettek gyors pipája, súly/ismétlés inline szerkeszthető (előző alkalom értéke előtöltve), "Befejezés" → `completion_pct` → `award(workout_done)`.
-- [ ] Séma: `meal_templates`, `meal_plan_items`, `meal_logs`; `settings.kcal_target`.
-- [ ] Étkezés tab: napi kcal gyűrű (evett / cél), a napra tervezett ételek pipálhatóan, "+ ad hoc" a sablonokból. A tervezett napi `meal_logs`-ot a napzárás generálja előre (holnapra).
-- [ ] Napzárás bővítése: kcal cél kiértékelés, `workout_done` a `daily_summaries`-be.
-- **Kész, ha:** egy edzés naplózása 2 perc alatt, egy nap kajája 30 másodperc alatt megvan.
+- [x] Séma: `exercises`, `workout_plans`, `workout_plan_exercises`, `workout_sessions`, `set_logs`.
+- [x] Edzés tab: mai terv (weekday_mask) → "Start" → szettek gyors pipája, súly/ismétlés inline szerkeszthető (előző alkalom értéke előtöltve), "Befejezés" → `completion_pct` → `award(workout_done)`.
+- [x] Séma: `meal_templates`, `meal_plan_items`, `meal_logs`; `settings.kcal_target`.
+- [x] Étkezés tab: napi kcal gyűrű (evett / cél), a napra tervezett ételek pipálhatóan, "+ ad hoc" a sablonokból. A tervezett napi `meal_logs`-ot a napzárás generálja előre (holnapra).
+- [x] Napzárás bővítése: kcal cél kiértékelés, `workout_done` a `daily_summaries`-be.
+- **Kész (2026-09-11):** 105 Vitest zöld (16 új: edzés, étkezés, beállítás, napzárás kcal/edzés), tsc zöld, Android + web export sikeres, Edzés/Kaja tabok böngészőben kipróbálva. Eredeti kritérium: egy edzés naplózása 2 perc alatt, egy nap kajája 30 másodperc alatt megvan.
 
 ### Fázis 4 – Finomhangolás (folyamatos)
 - [ ] Statisztika képernyő: heti pontgörbe, szokás heatmap (GitHub-stílus), edzés-progresszió (max súly / gyakorlat), kcal trend. (`daily_summaries` + aggregációk.)

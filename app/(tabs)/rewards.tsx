@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { RewardView } from '@/src/domain/rewards';
 import { confirm, notifyError } from '@/src/ui/notify';
 import { useRewardActions, useRewardShop } from '@/src/features/rewards/useRewards';
@@ -69,14 +69,16 @@ function RewardCard({ item }: { item: RewardView }) {
   return (
     <Card>
       <View className="flex-row items-start justify-between">
-        <Link href={{ pathname: '/reward/[id]', params: { id: reward.id } }} className="flex-1 pr-3">
-          <Text className="text-base font-semibold text-ink dark:text-ink-dark">
-            {reward.icon ? `${reward.icon} ` : ''}
-            {reward.name}
-          </Text>
-          {reward.description ? (
-            <Text className="mt-0.5 text-sm text-ink-muted dark:text-ink-dark-muted">{reward.description}</Text>
-          ) : null}
+        <Link href={{ pathname: '/reward/[id]', params: { id: reward.id } }} asChild>
+          <Pressable className="flex-1 pr-3">
+            <Text className="text-base font-semibold text-ink dark:text-ink-dark">
+              {reward.icon ? `${reward.icon} ` : ''}
+              {reward.name}
+            </Text>
+            {reward.description ? (
+              <Text className="mt-0.5 text-sm text-ink-muted dark:text-ink-dark-muted">{reward.description}</Text>
+            ) : null}
+          </Pressable>
         </Link>
         <Text className="text-lg font-extrabold text-accent dark:text-accent-dark">{reward.cost}</Text>
       </View>

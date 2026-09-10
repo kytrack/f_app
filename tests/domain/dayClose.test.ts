@@ -102,8 +102,8 @@ describe('closeDay', () => {
     tapHabit(w.ctx, h.id, '2026-09-07');
     w.setNow('2026-09-14T10:00:00Z'); // next Monday
     const closed = closePendingDays(w.ctx);
+    // Settlement starts at the install day (the 8th); the Monday tap stays unsettled.
     expect(closed).toEqual([
-      '2026-09-07',
       '2026-09-08',
       '2026-09-09',
       '2026-09-10',
@@ -111,9 +111,8 @@ describe('closeDay', () => {
       '2026-09-12',
       '2026-09-13',
     ]);
-    // +10 workout, +25 perfect day on Monday (only scheduled habit done, no tasks due),
-    // -5 once for the weekly quota miss on Sunday, nothing on the other weekdays
-    expect(balance(w.ctx).raw).toBe(30);
+    // +10 workout, -5 once for the weekly quota miss on Sunday, nothing on the other weekdays
+    expect(balance(w.ctx).raw).toBe(5);
     expect(recentEntries(w.ctx).filter((e) => e.reason === 'habit_missed')).toHaveLength(1);
     expect(getHabit(w.ctx, h.id).currentStreak).toBe(0);
   });

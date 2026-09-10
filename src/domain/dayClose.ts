@@ -8,6 +8,7 @@ import {
   habitLogs,
   habits,
   tasks,
+  users,
   type DailySummary,
   type Habit,
   type HabitLog,
@@ -16,7 +17,9 @@ import { nowIso, todayKey, type DomainCtx } from './context';
 import { addDaysToKey, dayKeyFor, dayRange, weekdayIndex, type DayKey } from './dates';
 import { scheduledHabitsOn } from './habits';
 import { award, penalize, pointsForDay } from './points/ledger';
-import { POINTS } from './points/rules';
+import { POINTS, evaluateKcal } from './points/rules';
+import { dayNutrition, materializeMealLogs } from './meals';
+import { workoutDoneOn } from './workouts';
 import { milestoneBonus, multiplierFor, nextStreak, type DayOutcome } from './points/streak';
 import { materializeRecurringTasks, taskDayKey } from './tasks';
 
@@ -204,6 +207,15 @@ export function closeDay(ctx: DomainCtx, date: DayKey): DailySummary | null {
         dayKeyFor(new Date(t.completedAt), c.settings.timezone, c.settings.dayStartHour) <= date,
     ).length;
 
+    // --- kcal goal (only when the day has any food logged; under-eating is never penalised)
+    const nutrition = dayNutrition(c, date);
+    const kcalOutcome = evaluateKcal({ eaten: nutrition.eatenKcal, target: c.settings.kcalTarget, tolerancePct: c.settings.kcalTolerancePct });
+    if (kcalOutcome === 'hit') {
+      award(c, { reason: 'kcal_goal_hit', refType: 'day', refId: date, date, base: POINTS.kcalGoalHit });
+    } else if (kcalOutcome === 'over') {
+      penalize(c, { reason: 'kcal_goal_missed', refType: 'day', refId: date, date, base: POINTS.kcalGoalMissed });
+    }
+
     // --- perfect day
     const perfectDay = habitsScheduled > 0 && habitsDone === habitsScheduled && tasksDone === tasksDue;
     if (perfectDay) {
@@ -220,10 +232,10 @@ export function closeDay(ctx: DomainCtx, date: DayKey): DailySummary | null {
         habitsDone,
         tasksDue,
         tasksDone,
-        workoutDone: false,
+        workoutDone: workoutDoneOn(c, date),
         kcalTarget: c.settings.kcalTarget,
-        kcalEaten: null,
-        kcalGoalHit: null,
+        kcalEaten: kcalOutcome === 'no_data' ? null : nutrition.eatenKcal,
+        kcalGoalHit: kcalOutcome === 'no_data' ? null : kcalOutcome === 'hit',
         pointsEarned: pts.earned,
         pointsLost: pts.lost,
         perfectDay,
@@ -234,25 +246,10 @@ export function closeDay(ctx: DomainCtx, date: DayKey): DailySummary | null {
   });
 }
 
-/** First day that has anything to settle: earliest habit/task creation day. */
-function firstActivityDay(ctx: DomainCtx): DayKey | null {
-  const toKey = (iso: string) => dayKeyFor(new Date(iso), ctx.settings.timezone, ctx.settings.dayStartHour);
-  const h = ctx.db
-    .select({ createdAt: habits.createdAt })
-    .from(habits)
-    .where(eq(habits.userId, ctx.userId))
-    .orderBy(asc(habits.createdAt))
-    .limit(1)
-    .get();
-  const t = ctx.db
-    .select({ createdAt: tasks.createdAt })
-    .from(tasks)
-    .where(eq(tasks.userId, ctx.userId))
-    .orderBy(asc(tasks.createdAt))
-    .limit(1)
-    .get();
-  const keys = [h?.createdAt, t?.createdAt].filter((x): x is string => !!x).map(toKey);
-  return keys.length ? keys.sort()[0] : null;
+/** The install day: every day since then gets a summary row (empty days settle to zeros). */
+function installDay(ctx: DomainCtx): DayKey | null {
+  const u = ctx.db.select({ createdAt: users.createdAt }).from(users).where(eq(users.id, ctx.userId)).get();
+  return u ? dayKeyFor(new Date(u.createdAt), ctx.settings.timezone, ctx.settings.dayStartHour) : null;
 }
 
 /**
@@ -262,6 +259,9 @@ function firstActivityDay(ctx: DomainCtx): DayKey | null {
 export function closePendingDays(ctx: DomainCtx): DayKey[] {
   const closed = settlePendingDays(ctx);
   materializeRecurringTasks(ctx);
+  const today = todayKey(ctx);
+  materializeMealLogs(ctx, today);
+  materializeMealLogs(ctx, addDaysToKey(today, 1));
   return closed;
 }
 
@@ -273,7 +273,7 @@ function settlePendingDays(ctx: DomainCtx): DayKey[] {
     .orderBy(sql`${dailySummaries.date} desc`)
     .limit(1)
     .get()?.date;
-  const from = last ? addDaysToKey(last, 1) : firstActivityDay(ctx);
+  const from = last ? addDaysToKey(last, 1) : installDay(ctx);
   if (!from) return [];
   const yesterday = addDaysToKey(todayKey(ctx), -1);
   const closed: DayKey[] = [];

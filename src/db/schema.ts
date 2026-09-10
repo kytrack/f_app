@@ -154,6 +154,149 @@ export const eventReminders = sqliteTable('event_reminders', {
   offsetMinutes: integer('offset_minutes').notNull(), // 0, 15, 60, 1440 …
 });
 
+// ---------------------------------------------------------------- workouts
+
+export const exercises = sqliteTable('exercises', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
+  name: text('name').notNull(),
+  muscleGroup: text('muscle_group'),
+  isBodyweight: integer('is_bodyweight', { mode: 'boolean' }).notNull().default(false),
+  deletedAt: text('deleted_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const workoutPlans = sqliteTable('workout_plans', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
+  name: text('name').notNull(),
+  weekdayMask: integer('weekday_mask').notNull().default(0), // planned days, bit0 = Monday
+  pointsComplete: integer('points_complete').notNull().default(30),
+  sortOrder: integer('sort_order').notNull().default(0),
+  archivedAt: text('archived_at'),
+  deletedAt: text('deleted_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const workoutPlanExercises = sqliteTable('workout_plan_exercises', {
+  id: text('id').primaryKey(),
+  planId: text('plan_id')
+    .notNull()
+    .references(() => workoutPlans.id, { onDelete: 'cascade' }),
+  exerciseId: text('exercise_id')
+    .notNull()
+    .references(() => exercises.id),
+  sortOrder: integer('sort_order').notNull(),
+  targetSets: integer('target_sets').notNull(),
+  targetReps: integer('target_reps').notNull(),
+  targetWeightKg: real('target_weight_kg'),
+});
+
+export const workoutSessions = sqliteTable(
+  'workout_sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    planId: text('plan_id').references(() => workoutPlans.id),
+    date: text('date').notNull(), // logical day
+    startedAt: text('started_at').notNull(),
+    finishedAt: text('finished_at'),
+    completionPct: integer('completion_pct'), // done sets / planned sets
+    note: text('note'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_sessions_date').on(t.date)],
+);
+
+export const setLogs = sqliteTable(
+  'set_logs',
+  {
+    id: text('id').primaryKey(),
+    sessionId: text('session_id')
+      .notNull()
+      .references(() => workoutSessions.id, { onDelete: 'cascade' }),
+    exerciseId: text('exercise_id')
+      .notNull()
+      .references(() => exercises.id),
+    setIndex: integer('set_index').notNull(),
+    weightKg: real('weight_kg'),
+    reps: integer('reps'),
+    done: integer('done', { mode: 'boolean' }).notNull().default(false),
+  },
+  (t) => [uniqueIndex('uq_set_logs').on(t.sessionId, t.exerciseId, t.setIndex)],
+);
+
+// ---------------------------------------------------------------- meals
+
+export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+export type MealSlot = (typeof MEAL_SLOTS)[number];
+
+export const mealTemplates = sqliteTable('meal_templates', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
+  name: text('name').notNull(),
+  kcal: integer('kcal').notNull(),
+  proteinG: real('protein_g'),
+  carbsG: real('carbs_g'),
+  fatG: real('fat_g'),
+  defaultSlot: text('default_slot', { enum: MEAL_SLOTS }),
+  archivedAt: text('archived_at'),
+  deletedAt: text('deleted_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+/** Weekly template: "Monday breakfast = X". */
+export const mealPlanItems = sqliteTable('meal_plan_items', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
+  weekday: integer('weekday').notNull(), // 0 = Monday … 6 = Sunday
+  slot: text('slot', { enum: MEAL_SLOTS }).notNull(),
+  templateId: text('template_id')
+    .notNull()
+    .references(() => mealTemplates.id),
+  sortOrder: integer('sort_order').notNull().default(0),
+});
+
+/** Daily instance: generated from the weekly plan plus ad-hoc entries. Snapshots survive template edits. */
+export const mealLogs = sqliteTable(
+  'meal_logs',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    date: text('date').notNull(), // logical day
+    slot: text('slot', { enum: MEAL_SLOTS }).notNull(),
+    templateId: text('template_id').references(() => mealTemplates.id),
+    planItemId: text('plan_item_id'), // which weekly item generated it (idempotency)
+    nameSnapshot: text('name_snapshot').notNull(),
+    kcalSnapshot: integer('kcal_snapshot').notNull(),
+    proteinSnapshot: real('protein_snapshot'),
+    carbsSnapshot: real('carbs_snapshot'),
+    fatSnapshot: real('fat_snapshot'),
+    eaten: integer('eaten', { mode: 'boolean' }).notNull().default(false),
+    planned: integer('planned', { mode: 'boolean' }).notNull().default(true),
+    deletedAt: text('deleted_at'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_meal_logs_date').on(t.date)],
+);
+
 // ---------------------------------------------------------------- gamification
 
 export const LEDGER_REASONS = [
@@ -270,6 +413,15 @@ export type NewTask = typeof tasks.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type EventReminder = typeof eventReminders.$inferSelect;
+export type Exercise = typeof exercises.$inferSelect;
+export type WorkoutPlan = typeof workoutPlans.$inferSelect;
+export type WorkoutPlanExercise = typeof workoutPlanExercises.$inferSelect;
+export type WorkoutSession = typeof workoutSessions.$inferSelect;
+export type SetLog = typeof setLogs.$inferSelect;
+export type MealTemplate = typeof mealTemplates.$inferSelect;
+export type NewMealTemplate = typeof mealTemplates.$inferInsert;
+export type MealPlanItem = typeof mealPlanItems.$inferSelect;
+export type MealLog = typeof mealLogs.$inferSelect;
 export type LedgerEntry = typeof pointLedger.$inferSelect;
 export type Reward = typeof rewards.$inferSelect;
 export type NewReward = typeof rewards.$inferInsert;

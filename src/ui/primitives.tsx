@@ -129,6 +129,8 @@ export function Segmented<T extends string>({
             <Pressable
               key={o.value}
               onPress={() => onChange(o.value)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
               className={`flex-1 items-center rounded-lg py-2 ${
                 active ? 'bg-surface dark:bg-surface-dark' : ''
               }`}>

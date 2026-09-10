@@ -10,6 +10,8 @@ export const ROOT_KEY = ['lifeos'] as const;
 
 /** Listeners run after every successful domain mutation (e.g. notification re-planning). */
 export const onDomainChange = new Set<() => void>();
+/** Listeners run when the settings row changed, so the DomainCtx snapshot can be rebuilt. */
+export const onSettingsChange = new Set<() => void>();
 export const keys = {
   today: (date: string) => [...ROOT_KEY, 'today', date] as const,
   points: () => [...ROOT_KEY, 'points'] as const,

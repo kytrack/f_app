@@ -3,8 +3,9 @@
  * settings from the DB. Exposed through React context.
  */
 import * as Crypto from 'expo-crypto';
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { DomainCtx } from '@/src/domain/context';
+import { onSettingsChange } from '@/src/features/queries';
 import { getDb } from './client';
 import { settings as settingsTable } from './schema';
 
@@ -30,7 +31,16 @@ export function buildDomainCtx(): DomainCtx {
 const DomainContext = createContext<DomainCtx | null>(null);
 
 export function DomainProvider({ children }: { children: ReactNode }) {
-  const ctx = useMemo(buildDomainCtx, []);
+  const [version, setVersion] = useState(0);
+  // Settings are a snapshot inside the ctx; bump the version to re-read them after an edit.
+  const ctx = useMemo(buildDomainCtx, [version]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const bump = () => setVersion((v) => v + 1);
+    onSettingsChange.add(bump);
+    return () => {
+      onSettingsChange.delete(bump);
+    };
+  }, []);
   return <DomainContext.Provider value={ctx}>{children}</DomainContext.Provider>;
 }
 
