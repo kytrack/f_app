@@ -141,7 +141,7 @@ export function setActiveDelta(
 ): LedgerEntry | null {
   const active = findActiveEntry(ctx, input);
   if (active && active.delta === input.desired) return active;
-  if (active) reverse(ctx, active.id, 'recomputed');
+  if (active) reverse(ctx, active.id, 'újraszámolva');
   if (input.desired === 0) return null;
   return insert(ctx, {
     delta: input.desired,

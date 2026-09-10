@@ -1,10 +1,10 @@
 import { Link } from 'expo-router';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { cleanDays, type HabitWithLog } from '@/src/domain/habits';
 import { multiplierFor } from '@/src/domain/points/streak';
 import { CheckCircle } from '@/src/ui/CheckCircle';
 import { IconButton, usePalette } from '@/src/ui/primitives';
-import { describeError } from '../queries';
+import { confirm, notifyError } from '@/src/ui/notify';
 import { useHabitActions } from './useHabits';
 
 export function HabitRow({ item, date }: { item: HabitWithLog; date: string }) {
@@ -33,7 +33,7 @@ function GoodHabitRow({ item: { habit, log }, date }: { item: HabitWithLog; date
   const done = log?.status === 'done';
   const skipped = log?.status === 'skipped';
   const counted = habit.targetCount > 1;
-  const onError = (e: unknown) => Alert.alert('Hoppá', describeError(e));
+  const onError = (e: unknown) => notifyError(e);
 
   return (
     <View className="flex-row items-center gap-3 border-b border-line py-3 last:border-b-0 dark:border-line-dark">
@@ -93,17 +93,16 @@ function BadHabitRow({
   const p = usePalette();
   const relapses = log?.status === 'relapse' ? log.count : 0;
   const clean = cleanDays(habit, date);
-  const onError = (e: unknown) => Alert.alert('Hoppá', describeError(e));
+  const onError = (e: unknown) => notifyError(e);
 
   const confirmRelapse = () =>
-    Alert.alert(habit.name, 'Rögzítsem a visszaesést? Ez pontlevonással jár és nullázza a sorozatot.', [
-      { text: 'Mégse', style: 'cancel' },
-      {
-        text: 'Igen, visszaestem',
-        style: 'destructive',
-        onPress: () => relapse.mutate({ habitId: habit.id, date, delta: 1 }, { onError }),
-      },
-    ]);
+    confirm({
+      title: habit.name,
+      message: 'Rögzítsem a visszaesést? Ez pontlevonással jár és nullázza a sorozatot.',
+      confirmText: 'Igen, visszaestem',
+      destructive: true,
+      onConfirm: () => relapse.mutate({ habitId: habit.id, date, delta: 1 }, { onError }),
+    });
 
   return (
     <View className="flex-row items-center gap-3 border-b border-line py-3 dark:border-line-dark">

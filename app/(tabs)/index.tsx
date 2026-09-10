@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { hu } from 'date-fns/locale';
 import { Link } from 'expo-router';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
@@ -8,6 +8,8 @@ import { TaskRow } from '@/src/features/tasks/TaskRow';
 import { PointsHeader } from '@/src/features/today/PointsHeader';
 import { useToday } from '@/src/features/today/useToday';
 import { Card, EmptyState, IconButton, SectionTitle } from '@/src/ui/primitives';
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function TodayScreen() {
   useDayClose();
@@ -24,8 +26,9 @@ export default function TodayScreen() {
       className="flex-1 bg-canvas dark:bg-canvas-dark"
       contentContainerClassName="px-4 pb-24 pt-2"
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
-      <Text className="mb-3 px-1 text-sm capitalize text-ink-muted dark:text-ink-dark-muted">
-        {format(new Date(), 'EEEE, MMMM d.', { locale: hu })}
+      <Text className="mb-3 px-1 text-sm text-ink-muted dark:text-ink-dark-muted">
+        {capitalize(format(parseISO(date), 'EEEE, MMMM d.', { locale: hu }))}
+        {date !== format(new Date(), 'yyyy-MM-dd') ? ' · a nap hajnali 4-ig tart' : ''}
       </Text>
       <PointsHeader todayNet={points.net} />
 

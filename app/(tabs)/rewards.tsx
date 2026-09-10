@@ -1,7 +1,7 @@
 import { Link } from 'expo-router';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import type { RewardView } from '@/src/domain/rewards';
-import { describeError } from '@/src/features/queries';
+import { confirm, notifyError } from '@/src/ui/notify';
 import { useRewardActions, useRewardShop } from '@/src/features/rewards/useRewards';
 import { Button, Card, EmptyState, IconButton, ProgressBar, SectionTitle, usePalette } from '@/src/ui/primitives';
 
@@ -58,15 +58,13 @@ function RewardCard({ item }: { item: RewardView }) {
         : 'pihen'
     : null;
 
-  const confirm = () =>
-    Alert.alert(reward.name, `Beváltod ${reward.cost} pontért?`, [
-      { text: 'Mégse', style: 'cancel' },
-      {
-        text: 'Beváltom',
-        onPress: () =>
-          redeem.mutate(reward.id, { onError: (e) => Alert.alert('Nem sikerült', describeError(e)) }),
-      },
-    ]);
+  const confirmRedeem = () =>
+    confirm({
+      title: reward.name,
+      message: `Beváltod ${reward.cost} pontért?`,
+      confirmText: 'Beváltom',
+      onConfirm: () => redeem.mutate(reward.id, { onError: (e) => notifyError(e, 'Nem sikerült') }),
+    });
 
   return (
     <Card>
@@ -90,7 +88,7 @@ function RewardCard({ item }: { item: RewardView }) {
           {reasonText ?? 'beváltható'}
           {redeemedCount > 0 ? ` · ${redeemedCount}× beváltva` : ''}
         </Text>
-        <Button title="Beváltás" disabled={!availability.ok} onPress={confirm} className="px-4 py-2" />
+        <Button title="Beváltás" disabled={!availability.ok} onPress={confirmRedeem} className="px-4 py-2" />
       </View>
     </Card>
   );

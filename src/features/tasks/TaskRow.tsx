@@ -1,12 +1,12 @@
 import { format } from 'date-fns';
 import { hu } from 'date-fns/locale';
 import { Link } from 'expo-router';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import type { Task } from '@/src/db/schema';
 import { taskPoints, type TaskPriority } from '@/src/domain/points/rules';
 import { CheckCircle } from '@/src/ui/CheckCircle';
 import { usePalette } from '@/src/ui/primitives';
-import { describeError } from '../queries';
+import { notifyError } from '@/src/ui/notify';
 import { useTaskActions } from './useTasks';
 
 const PRIORITY_LABEL: Record<number, string> = { 1: 'alacsony', 2: 'közepes', 3: 'fontos' };
@@ -15,7 +15,10 @@ export function TaskRow({ task, overdue = false }: { task: Task; overdue?: boole
   const { toggle } = useTaskActions();
   const p = usePalette();
   const done = !!task.completedAt;
-  const late = !done && !!task.dueAt && new Date(task.dueAt).getTime() < Date.now();
+  // Shown points = what completing now would earn, or what completing did earn.
+  const late =
+    !!task.dueAt &&
+    (task.completedAt ? task.completedAt > task.dueAt : new Date(task.dueAt).getTime() < Date.now());
   const points = taskPoints({ priority: task.priority as TaskPriority, override: task.points, late });
 
   return (
@@ -26,7 +29,7 @@ export function TaskRow({ task, overdue = false }: { task: Task; overdue?: boole
         onPress={() =>
           toggle.mutate(
             { id: task.id, done: !done },
-            { onError: (e) => Alert.alert('Hoppá', describeError(e)) },
+            { onError: (e) => notifyError(e) },
           )
         }
       />

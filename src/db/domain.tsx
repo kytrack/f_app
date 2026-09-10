@@ -5,10 +5,11 @@
 import * as Crypto from 'expo-crypto';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { DomainCtx } from '@/src/domain/context';
-import { db } from './client';
+import { getDb } from './client';
 import { settings as settingsTable } from './schema';
 
 export function buildDomainCtx(): DomainCtx {
+  const db = getDb();
   const row = db.select().from(settingsTable).get();
   if (!row) throw new Error('settings row missing – seed did not run');
   return {

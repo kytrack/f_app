@@ -1,10 +1,10 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { z } from 'zod';
 import type { HabitInput } from '@/src/domain/habits';
 import { useHabit, useHabitActions } from '@/src/features/habits/useHabits';
-import { describeError } from '@/src/features/queries';
+import { confirm, notifyError } from '@/src/ui/notify';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
 
 const WEEKDAYS = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
@@ -86,21 +86,20 @@ export default function HabitFormScreen() {
     };
     const opts = {
       onSuccess: () => router.back(),
-      onError: (e: unknown) => Alert.alert('Nem sikerült', describeError(e)),
+      onError: (e: unknown) => notifyError(e, 'Nem sikerült'),
     };
     if (isNew) create.mutate(input, opts);
     else update.mutate({ id, patch: input }, opts);
   };
 
   const confirmArchive = () =>
-    Alert.alert('Archiválod?', 'A szokás eltűnik a napi listából, a történet megmarad.', [
-      { text: 'Mégse', style: 'cancel' },
-      {
-        text: 'Archiválás',
-        style: 'destructive',
-        onPress: () => archive.mutate(id, { onSuccess: () => router.back() }),
-      },
-    ]);
+    confirm({
+      title: 'Archiválod?',
+      message: 'A szokás eltűnik a napi listából, a történet megmarad.',
+      confirmText: 'Archiválás',
+      destructive: true,
+      onConfirm: () => archive.mutate(id, { onSuccess: () => router.back(), onError: (e) => notifyError(e) }),
+    });
 
   const isBad = form.kind === 'bad';
 

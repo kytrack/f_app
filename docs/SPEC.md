@@ -407,6 +407,7 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Visszaesés:** egy aktív levonás naponta, értéke `min(count × 2 × penalty, 30)`; a streak nullázása a napzárásban történik, így a visszaesés visszavonható.
 - **XP:** csak a nem sztornózott pozitív sorok összege, így a pipa/unpipa ciklus nem farmol XP-t.
 - **Heti N× szokás:** naponta nincs levonás; vasárnapi záráskor kvóta-ellenőrzés, hiány esetén egyszeri levonás + streak reset.
+- **Webes előnézet (2026-09-11):** production web export + `scripts/serve-web-dist.js` (COOP/COEP fejlécek). Két upstream-korlát: a dev szerver nem tud worker chunkot adni (ezért export kell), és az expo-sqlite webes szinkron hídja 255 bájt fölött csonkolta a választ – `patches/expo-sqlite+57.0.2.patch` javítja. Weben az `Alert` néma, ezért `src/ui/notify.ts`. A böngészős próbán (00:10-kor!) két napkezdet-hiba derült ki és lett javítva: a fejléc és a teendő „Ma” előbeállítása a naptári nap helyett a logikai napot használja.
 - **Domain tesztelés:** a domain réteg `DomainCtx`-et kap (db, óra, uuid), így Node-ban sql.js-en ugyanazokkal a migrációkkal fut, mint a telefonon expo-sqlite-on.
 
 ### 4.4 Napzárás (`domain/dayClose.ts`)

@@ -5,12 +5,12 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
-import { db } from '@/src/db/client';
+import { getDb, prepareDatabase } from '@/src/db/client';
 import { DomainProvider } from '@/src/db/domain';
 import migrations from '@/src/db/migrations/migrations';
 import { ensureSeed } from '@/src/db/seed';
@@ -31,46 +31,60 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 0 } },
 });
 
+function Loading({ label }: { label: string }) {
+  return (
+    <View className="flex-1 items-center justify-center bg-canvas dark:bg-canvas-dark">
+      <Text className="text-ink-muted dark:text-ink-dark-muted">{label}</Text>
+    </View>
+  );
+}
+
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
-  const { success: migrated, error: migrationError } = useMigrations(db, migrations);
-  const [seeded, setSeeded] = useState(false);
+  const [dbReady, setDbReady] = useState(false);
+  const [dbError, setDbError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    prepareDatabase().then(() => setDbReady(true), setDbError);
+  }, []);
 
   useEffect(() => {
     if (fontError) throw fontError;
-    if (migrationError) throw migrationError;
-  }, [fontError, migrationError]);
+    if (dbError) throw dbError;
+  }, [fontError, dbError]);
 
-  useEffect(() => {
-    if (!migrated) return;
-    ensureSeed()
-      .then(() => setSeeded(true))
-      .catch((e) => {
-        throw e;
-      });
-  }, [migrated]);
-
-  useEffect(() => {
-    if (fontsLoaded && seeded) SplashScreen.hideAsync();
-  }, [fontsLoaded, seeded]);
-
-  if (!fontsLoaded || !seeded) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas dark:bg-canvas-dark">
-        <Text className="text-ink-muted">Betöltés…</Text>
-      </View>
-    );
-  }
-
+  if (!fontsLoaded || !dbReady) return <Loading label="Betöltés…" />;
   return (
-    <QueryClientProvider client={queryClient}>
-      <DomainProvider>
-        <RootLayoutNav />
-      </DomainProvider>
-    </QueryClientProvider>
+    <Migrator>
+      <QueryClientProvider client={queryClient}>
+        <DomainProvider>
+          <RootLayoutNav />
+        </DomainProvider>
+      </QueryClientProvider>
+    </Migrator>
   );
+}
+
+/** Runs pending Drizzle migrations + the seed, then hides the splash screen. */
+function Migrator({ children }: { children: ReactNode }) {
+  const { success, error } = useMigrations(getDb(), migrations);
+  const [seeded, setSeeded] = useState(false);
+
+  useEffect(() => {
+    if (error) throw error;
+  }, [error]);
+
+  useEffect(() => {
+    if (!success) return;
+    ensureSeed();
+    setSeeded(true);
+    SplashScreen.hideAsync();
+  }, [success]);
+
+  if (!seeded) return <Loading label="Adatbázis előkészítése…" />;
+  return <>{children}</>;
 }
 
 function RootLayoutNav() {

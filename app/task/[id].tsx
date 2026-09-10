@@ -1,10 +1,13 @@
-import { addDays, format, setHours, setMinutes, startOfDay } from 'date-fns';
+import { format, setHours, setMinutes } from 'date-fns';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { z } from 'zod';
+import { useDomain } from '@/src/db/domain';
+import { todayKey } from '@/src/domain/context';
+import { addDaysToKey } from '@/src/domain/dates';
 import type { TaskInput } from '@/src/domain/tasks';
-import { describeError } from '@/src/features/queries';
+import { confirm, notifyError } from '@/src/ui/notify';
 import { useTask, useTaskActions } from '@/src/features/tasks/useTasks';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
 
@@ -20,20 +23,24 @@ const schema = z.object({
 });
 type Form = z.infer<typeof schema>;
 
-const EMPTY: Form = { title: '', notes: '', priority: '2', due: 'today', customDate: '', time: '18:00' };
+/** Default deadline: 18:00, or the next full hour when 18:00 has already passed today. */
+function defaultTime(now = new Date()): string {
+  const h = now.getHours();
+  if (h < 17) return '18:00';
+  return `${String((h + 1) % 24).padStart(2, '0')}:00`;
+}
 
-function buildDueAt(f: Form): string | null {
+const EMPTY: Form = { title: '', notes: '', priority: '2', due: 'today', customDate: '', time: defaultTime() };
+
+/** "Ma"/"Holnap" follow the LOGICAL day (day starts at 04:00), not the wall-clock date. */
+function buildDueAt(f: Form, todayKey: string): string | null {
   if (f.due === 'none') return null;
-  let day: Date;
-  if (f.due === 'today') day = startOfDay(new Date());
-  else if (f.due === 'tomorrow') day = startOfDay(addDays(new Date(), 1));
-  else {
-    if (!f.customDate) return null;
-    const [y, m, d] = f.customDate.split('-').map(Number);
-    day = new Date(y, m - 1, d);
-  }
+  const key =
+    f.due === 'today' ? todayKey : f.due === 'tomorrow' ? addDaysToKey(todayKey, 1) : f.customDate;
+  if (!key) return null;
+  const [y, m, d] = key.split('-').map(Number);
   const [hh, mm] = (f.time || '23:59').split(':').map(Number);
-  return setMinutes(setHours(day, hh), mm).toISOString();
+  return setMinutes(setHours(new Date(y, m - 1, d), hh), mm).toISOString();
 }
 
 export default function TaskFormScreen() {
@@ -41,6 +48,7 @@ export default function TaskFormScreen() {
   const isNew = id === 'new';
   const { data: task } = useTask(isNew ? undefined : id);
   const { create, update, remove } = useTaskActions();
+  const ctx = useDomain();
   const [form, setForm] = useState<Form>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
 
@@ -73,21 +81,24 @@ export default function TaskFormScreen() {
       title: v.title,
       notes: v.notes || null,
       priority: Number(v.priority),
-      dueAt: buildDueAt(v),
+      dueAt: buildDueAt(v, todayKey(ctx)),
     };
     const opts = {
       onSuccess: () => router.back(),
-      onError: (e: unknown) => Alert.alert('Nem sikerült', describeError(e)),
+      onError: (e: unknown) => notifyError(e, 'Nem sikerült'),
     };
     if (isNew) create.mutate(input, opts);
     else update.mutate({ id, patch: input }, opts);
   };
 
   const confirmDelete = () =>
-    Alert.alert('Törlöd?', 'A teendő eltűnik a listából.', [
-      { text: 'Mégse', style: 'cancel' },
-      { text: 'Törlés', style: 'destructive', onPress: () => remove.mutate(id, { onSuccess: () => router.back() }) },
-    ]);
+    confirm({
+      title: 'Törlöd?',
+      message: 'A teendő eltűnik a listából.',
+      confirmText: 'Törlés',
+      destructive: true,
+      onConfirm: () => remove.mutate(id, { onSuccess: () => router.back(), onError: (e) => notifyError(e) }),
+    });
 
   return (
     <ScrollView

@@ -78,7 +78,7 @@ export function completeTask(ctx: DomainCtx, id: string): Task {
       refId: task.id,
       date: today,
       base: taskPoints({ priority: task.priority as TaskPriority, override: task.points, late }),
-      note: late ? 'late' : undefined,
+      note: late ? 'késve' : undefined,
     });
     return tx
       .update(tasks)
@@ -103,7 +103,7 @@ export function uncompleteTask(ctx: DomainCtx, id: string): Task {
       refId: task.id,
       date: completedDay,
     });
-    if (active) reverse(c, active.id, 'uncompleted');
+    if (active) reverse(c, active.id, 'visszavonva');
     return tx
       .update(tasks)
       .set({ completedAt: null, updatedAt: nowIso(c) })

@@ -116,7 +116,7 @@ function settleHabit(ctx: DomainCtx, habit: Habit, date: DayKey): 'done' | 'not_
         refId: habit.id,
         date,
         base: habit.pointsPenalty,
-        note: `weekly quota ${done}/${habit.timesPerWeek}`,
+        note: `heti kvóta ${done}/${habit.timesPerWeek}`,
       });
       outcome = 'missed';
     }
@@ -132,7 +132,7 @@ function settleHabit(ctx: DomainCtx, habit: Habit, date: DayKey): 'done' | 'not_
         refId: habit.id,
         date,
         base: bonus,
-        note: `${streak.current} days`,
+        note: `${streak.current} nap`,
       });
     }
     ctx.db

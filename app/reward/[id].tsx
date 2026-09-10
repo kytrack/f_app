@@ -1,9 +1,9 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { z } from 'zod';
 import type { RewardInput } from '@/src/domain/rewards';
-import { describeError } from '@/src/features/queries';
+import { confirm, notifyError } from '@/src/ui/notify';
 import { useReward, useRewardActions } from '@/src/features/rewards/useRewards';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
 
@@ -60,17 +60,20 @@ export default function RewardFormScreen() {
     };
     const opts = {
       onSuccess: () => router.back(),
-      onError: (e: unknown) => Alert.alert('Nem sikerült', describeError(e)),
+      onError: (e: unknown) => notifyError(e, 'Nem sikerült'),
     };
     if (isNew) create.mutate(input, opts);
     else update.mutate({ id, patch: input }, opts);
   };
 
   const confirmArchive = () =>
-    Alert.alert('Archiválod?', 'A jutalom eltűnik a boltból, a beváltások megmaradnak.', [
-      { text: 'Mégse', style: 'cancel' },
-      { text: 'Archiválás', style: 'destructive', onPress: () => archive.mutate(id, { onSuccess: () => router.back() }) },
-    ]);
+    confirm({
+      title: 'Archiválod?',
+      message: 'A jutalom eltűnik a boltból, a beváltások megmaradnak.',
+      confirmText: 'Archiválás',
+      destructive: true,
+      onConfirm: () => archive.mutate(id, { onSuccess: () => router.back(), onError: (e) => notifyError(e) }),
+    });
 
   return (
     <ScrollView

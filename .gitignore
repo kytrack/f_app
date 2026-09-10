@@ -42,3 +42,6 @@ yarn-error.*
 
 # tests
 coverage/
+
+# web preview build
+dist-web/
