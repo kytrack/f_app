@@ -67,6 +67,11 @@ export default function SettingsScreen() {
 
       <Button title="Mentés" onPress={save} disabled={update.isPending} />
 
+      <SectionTitle>Értesítések részletesen</SectionTitle>
+      <Link href="/admin/notifications" asChild>
+        <Button title="Lökések, kérdések, csendes órák" variant="secondary" />
+      </Link>
+
       <SectionTitle>Adatok</SectionTitle>
       <Link href="/backup" asChild>
         <Button title="Mentés, export és visszaállítás" variant="secondary" />

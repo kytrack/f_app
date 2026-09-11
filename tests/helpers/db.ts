@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/sql-js';
 import { migrate } from 'drizzle-orm/sql-js/migrator';
 import initSqlJs from 'sql.js';
 import * as schema from '@/src/db/schema';
-import type { DomainCtx } from '@/src/domain/context';
+import { DEFAULT_NOTIFICATION_SETTINGS, type DomainCtx } from '@/src/domain/context';
 
 const TZ = 'Europe/Budapest';
 
@@ -31,6 +31,10 @@ export async function createTestWorld(startAt = '2026-09-09T10:00:00Z'): Promise
     db,
     userId: 'user-1',
     settings: {
+      ...DEFAULT_NOTIFICATION_SETTINGS,
+      // Tests that exercise the plan enable nudges/captures explicitly.
+      nudgesPerDay: 0,
+      capturesPerDay: 0,
       timezone: TZ,
       dayStartHour: 4,
       editGraceHours: 48,

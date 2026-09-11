@@ -30,6 +30,7 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 - Celebrations: push to `src/store/celebration.ts` (`celebrate()`), never render your own overlay. Level-ups are detected in `useDomainMutation`, perfect days in `useDayClose`.
 - Stats are read-only aggregations in `src/domain/stats.ts`; charts are the View-based ones in `src/ui/charts.tsx` (no chart library).
 - Backup/restore lives in `src/backup/backup.ts` (native only); restore requires an app restart because the open connection and the DomainCtx snapshot point at the old file.
+- Notification intensity (nudges, capture prompts, quiet hours, toggles) is data in `settings` and read through `ctx.settings`; the plan in `src/domain/notifications.ts` is the only consumer. `/capture` is the quick-capture sheet; `/admin/*` are the management screens.
 - `Alert` is a no-op on web: use `notify()`/`confirm()` from `src/ui/notify.ts`, never `Alert.alert` directly.
 
 ## Layout

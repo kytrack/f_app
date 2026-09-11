@@ -118,6 +118,10 @@ function RootLayoutNav() {
         <Stack.Screen name="stats" />
         <Stack.Screen name="backup" />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="capture" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="admin/index" />
+        <Stack.Screen name="admin/habits" />
+        <Stack.Screen name="admin/notifications" />
       </Stack>
       <CelebrationOverlay />
     </ThemeProvider>

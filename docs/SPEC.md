@@ -434,6 +434,12 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Statisztika:** `domain/stats.ts` tiszta aggregációk (`pointsHistory`, `weeklyPoints`, `habitHeatmap`, `exerciseProgress`, `kcalHistory`, `overview`); lezárt napok a `daily_summaries`-ből, a mai nap élőben. Grafikonok View-alapúak, nincs chart-függőség.
 - **Onboarding:** `settings.onboarded_at`; a Ma képernyő átirányít, amíg null. Kihagyható.
 
+### 4.3f Értesítés-intenzitás, „van valami a fejedben?”, admin (2026-09-11, felhasználói kérés)
+
+- **Több értesítés, állíthatóan** (`settings` oszlopok, `/admin/notifications`): napközbeni **lökések** („Hol tartasz ma?” – hány szokás és teendő nyitott, 0–8/nap), **kérdések** („Van valami a fejedben?”, 0–6/nap, koppintásra a gyors rögzítő nyílik), esti összegző állítható időponttal, kapcsoló minden fajtára (szokás/teendő/esemény/összegző/lökés/kérdés), **csendes órák** (lökés, kérdés, összegző nem jön; a saját időpontos emlékeztetők igen). A lökések és kérdések az aktív ablakban egyenletesen oszlanak el, a kérdések 20 perccel eltolva. Android plafon 200, iOS 60 (legközelebbiek maradnak).
+- **Gyors rögzítés** (`/capture`): egy sor → teendő (ma/holnap/dátum/bármikor), naptár-esemény (1 óra, 15 perces emlékeztető) vagy jegyzet (határidő nélküli teendő). Megnyitáskor is felugrik, legfeljebb N óránként (`capture_on_open_hours`, 0 = soha), csendes órákban soha; a Ma képernyőn állandó beviteli sáv is van.
+- **Vezérlőpult** (`/admin`): minden kezelőfelület egy helyről. **Szokás-kezelő** (`/admin/habits`): aktív és archivált lista, sorrend ↑↓, szerkesztés, archiválás/visszaállítás, végleges (soft) törlés a történet megtartásával.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:

@@ -119,6 +119,45 @@ export function archiveHabit(ctx: DomainCtx, id: string): void {
   ctx.db.update(habits).set({ archivedAt: ts, updatedAt: ts }).where(eq(habits.id, id)).run();
 }
 
+export function restoreHabit(ctx: DomainCtx, id: string): void {
+  getHabit(ctx, id);
+  ctx.db.update(habits).set({ archivedAt: null, updatedAt: nowIso(ctx) }).where(eq(habits.id, id)).run();
+}
+
+/** Soft delete – logs and ledger rows stay for history, the habit disappears everywhere. */
+export function deleteHabit(ctx: DomainCtx, id: string): void {
+  getHabit(ctx, id);
+  const ts = nowIso(ctx);
+  ctx.db.update(habits).set({ deletedAt: ts, archivedAt: ts, updatedAt: ts }).where(eq(habits.id, id)).run();
+}
+
+/** Every non-deleted habit, active first, in display order – for the admin list. */
+export function listAllHabits(ctx: DomainCtx): Habit[] {
+  return ctx.db
+    .select()
+    .from(habits)
+    .where(and(eq(habits.userId, ctx.userId), isNull(habits.deletedAt)))
+    .orderBy(asc(habits.sortOrder), asc(habits.createdAt))
+    .all()
+    .sort((a, b) => Number(!!a.archivedAt) - Number(!!b.archivedAt));
+}
+
+/** Moves a habit one step up or down among the active ones and normalises sortOrder. */
+export function reorderHabit(ctx: DomainCtx, id: string, direction: 'up' | 'down'): void {
+  const list = listAllHabits(ctx).filter((h) => !h.archivedAt);
+  const i = list.findIndex((h) => h.id === id);
+  if (i < 0) throw new DomainError('NOT_FOUND', `habit ${id} not found`);
+  const j = direction === 'up' ? i - 1 : i + 1;
+  if (j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  const ts = nowIso(ctx);
+  ctx.db.transaction((tx) => {
+    list.forEach((h, idx) => {
+      tx.update(habits).set({ sortOrder: idx, updatedAt: ts }).where(eq(habits.id, h.id)).run();
+    });
+  });
+}
+
 /** Throws when `date` is in the future or older than the edit grace window. */
 export function assertEditable(ctx: DomainCtx, date: DayKey): void {
   const today = todayKey(ctx);

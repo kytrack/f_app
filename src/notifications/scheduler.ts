@@ -5,7 +5,13 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import type { DomainCtx } from '@/src/domain/context';
-import { planNotifications, type NotificationChannel, type PlannedNotification } from '@/src/domain/notifications';
+import {
+  MAX_SCHEDULED_ANDROID,
+  MAX_SCHEDULED_IOS,
+  planNotifications,
+  type NotificationChannel,
+  type PlannedNotification,
+} from '@/src/domain/notifications';
 import { colors } from '@/src/ui/tokens';
 
 export const isNativeNotifications = Platform.OS !== 'web';
@@ -36,6 +42,12 @@ export async function configureNotifications(): Promise<void> {
       summary: {
         name: 'Esti összegző',
         description: 'Mi maradt még mára',
+        importance: Notifications.AndroidImportance.DEFAULT,
+        lightColor: colors.accent.DEFAULT,
+      },
+      nudges: {
+        name: 'Lökések és kérdések',
+        description: 'Napközbeni „hol tartasz?” és „van valami a fejedben?” üzenetek',
         importance: Notifications.AndroidImportance.DEFAULT,
         lightColor: colors.accent.DEFAULT,
       },
@@ -116,7 +128,7 @@ export function reconcileNotifications(ctx: DomainCtx): Promise<void> {
     try {
       if (!(await notificationsAllowed())) return;
       await configureNotifications();
-      const plan = planNotifications(ctx);
+      const plan = planNotifications(ctx, { max: Platform.OS === 'ios' ? MAX_SCHEDULED_IOS : MAX_SCHEDULED_ANDROID });
       const wanted = new Map(plan.map((n) => [n.key, n]));
       const existing = await currentlyScheduled();
       const keep = new Set<string>();

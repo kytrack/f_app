@@ -4,7 +4,11 @@ import { useDomain } from '@/src/db/domain';
 import {
   archiveHabit,
   createHabit,
+  deleteHabit,
   getHabit,
+  listAllHabits,
+  reorderHabit,
+  restoreHabit,
   recordRelapse,
   setHabitCount,
   skipHabit,
@@ -12,7 +16,12 @@ import {
   updateHabit,
   type HabitInput,
 } from '@/src/domain/habits';
-import { keys, useDomainMutation } from '../queries';
+import { keys, ROOT_KEY, useDomainMutation } from '../queries';
+
+export function useAllHabits() {
+  const ctx = useDomain();
+  return useQuery({ queryKey: [...ROOT_KEY, 'allHabits'], queryFn: () => listAllHabits(ctx) });
+}
 
 export function useHabit(id: string | undefined) {
   const ctx = useDomain();
@@ -51,5 +60,10 @@ export function useHabitActions() {
     updateHabit(ctx, id, patch),
   );
   const archive = useDomainMutation((id: string) => archiveHabit(ctx, id));
-  return { tap, setCount, skip, relapse, create, update, archive };
+  const restore = useDomainMutation((id: string) => restoreHabit(ctx, id));
+  const remove = useDomainMutation((id: string) => deleteHabit(ctx, id));
+  const reorder = useDomainMutation(({ id, direction }: { id: string; direction: 'up' | 'down' }) =>
+    reorderHabit(ctx, id, direction),
+  );
+  return { tap, setCount, skip, relapse, create, update, archive, restore, remove, reorder };
 }

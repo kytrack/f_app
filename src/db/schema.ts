@@ -40,6 +40,20 @@ export const settings = sqliteTable('settings', {
   kcalTolerancePct: integer('kcal_tolerance_pct').notNull().default(10),
   editGraceHours: integer('edit_grace_hours').notNull().default(48),
   onboardedAt: text('onboarded_at'),
+  // --- notifications (see src/domain/notifications.ts)
+  notifHabits: integer('notif_habits', { mode: 'boolean' }).notNull().default(true),
+  notifTasks: integer('notif_tasks', { mode: 'boolean' }).notNull().default(true),
+  notifEvents: integer('notif_events', { mode: 'boolean' }).notNull().default(true),
+  notifSummary: integer('notif_summary', { mode: 'boolean' }).notNull().default(true),
+  notifNudges: integer('notif_nudges', { mode: 'boolean' }).notNull().default(true),
+  notifCapture: integer('notif_capture', { mode: 'boolean' }).notNull().default(true),
+  nudgesPerDay: integer('nudges_per_day').notNull().default(3), // "még X szokásod van" pings spread over the active window
+  capturesPerDay: integer('captures_per_day').notNull().default(2), // "van valami a fejedben?" prompts
+  quietFrom: text('quiet_from').notNull().default('22:00'), // no nudges/captures between quietFrom and quietTo
+  quietTo: text('quiet_to').notNull().default('07:30'),
+  summaryTime: text('summary_time').notNull().default('20:00'),
+  captureOnOpenHours: integer('capture_on_open_hours').notNull().default(4), // ask in-app at most every N hours (0 = never)
+  lastCapturePromptAt: text('last_capture_prompt_at'),
   updatedAt: text('updated_at').notNull(),
 });
 

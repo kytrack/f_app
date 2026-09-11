@@ -11,7 +11,37 @@ import { dayKeyFor, type DayKey } from './dates';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Db = BaseSQLiteDatabase<'sync', any, typeof schema>;
 
-export interface DomainSettings {
+export interface NotificationSettings {
+  notifHabits: boolean;
+  notifTasks: boolean;
+  notifEvents: boolean;
+  notifSummary: boolean;
+  notifNudges: boolean;
+  notifCapture: boolean;
+  nudgesPerDay: number;
+  capturesPerDay: number;
+  quietFrom: string; // 'HH:MM'
+  quietTo: string; // 'HH:MM'
+  summaryTime: string; // 'HH:MM'
+  captureOnOpenHours: number;
+}
+
+export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+  notifHabits: true,
+  notifTasks: true,
+  notifEvents: true,
+  notifSummary: true,
+  notifNudges: true,
+  notifCapture: true,
+  nudgesPerDay: 3,
+  capturesPerDay: 2,
+  quietFrom: '22:00',
+  quietTo: '07:30',
+  summaryTime: '20:00',
+  captureOnOpenHours: 4,
+};
+
+export interface DomainSettings extends NotificationSettings {
   timezone: string;
   dayStartHour: number;
   editGraceHours: number;

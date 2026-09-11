@@ -3,8 +3,33 @@ import { settings, type Settings } from '@/src/db/schema';
 import { DomainError, nowIso, type DomainCtx } from './context';
 
 export type SettingsPatch = Partial<
-  Pick<Settings, 'dayStartHour' | 'kcalTarget' | 'proteinG' | 'carbsG' | 'fatG' | 'kcalTolerancePct' | 'editGraceHours' | 'onboardedAt'>
+  Pick<
+    Settings,
+    | 'dayStartHour'
+    | 'kcalTarget'
+    | 'proteinG'
+    | 'carbsG'
+    | 'fatG'
+    | 'kcalTolerancePct'
+    | 'editGraceHours'
+    | 'onboardedAt'
+    | 'notifHabits'
+    | 'notifTasks'
+    | 'notifEvents'
+    | 'notifSummary'
+    | 'notifNudges'
+    | 'notifCapture'
+    | 'nudgesPerDay'
+    | 'capturesPerDay'
+    | 'quietFrom'
+    | 'quietTo'
+    | 'summaryTime'
+    | 'captureOnOpenHours'
+    | 'lastCapturePromptAt'
+  >
 >;
+
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export function getSettings(ctx: DomainCtx): Settings {
   const row = ctx.db.select().from(settings).where(eq(settings.userId, ctx.userId)).get();
@@ -23,6 +48,14 @@ export function updateSettings(ctx: DomainCtx, patch: SettingsPatch): Settings {
   for (const k of ['proteinG', 'carbsG', 'fatG'] as const) {
     const v = patch[k];
     if (v !== undefined && v !== null && (v < 0 || v > 2000)) throw bad(k);
+  }
+  if (patch.nudgesPerDay !== undefined && (patch.nudgesPerDay < 0 || patch.nudgesPerDay > 8)) throw bad('nudgesPerDay');
+  if (patch.capturesPerDay !== undefined && (patch.capturesPerDay < 0 || patch.capturesPerDay > 6)) throw bad('capturesPerDay');
+  if (patch.captureOnOpenHours !== undefined && (patch.captureOnOpenHours < 0 || patch.captureOnOpenHours > 48))
+    throw bad('captureOnOpenHours');
+  for (const k of ['quietFrom', 'quietTo', 'summaryTime'] as const) {
+    const v = patch[k];
+    if (v !== undefined && !HHMM.test(v)) throw bad(k);
   }
   return ctx.db
     .update(settings)
