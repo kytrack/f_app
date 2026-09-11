@@ -15,6 +15,7 @@ import { DomainProvider } from '@/src/db/domain';
 import migrations from '@/src/db/migrations/migrations';
 import { ensureSeed } from '@/src/db/seed';
 import { useNotifications } from '@/src/notifications/useNotifications';
+import { CelebrationOverlay } from '@/src/ui/Celebration';
 import { palette } from '@/src/ui/tokens';
 
 export {
@@ -114,7 +115,11 @@ function RootLayoutNav() {
         <Stack.Screen name="meal/plan" />
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
         <Stack.Screen name="history" options={{ title: 'Pont-történet' }} />
+        <Stack.Screen name="stats" />
+        <Stack.Screen name="backup" />
+        <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
       </Stack>
+      <CelebrationOverlay />
     </ThemeProvider>
   );
 }

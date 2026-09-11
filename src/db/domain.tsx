@@ -5,7 +5,8 @@
 import * as Crypto from 'expo-crypto';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { DomainCtx } from '@/src/domain/context';
-import { onSettingsChange } from '@/src/features/queries';
+import { balance } from '@/src/domain/points/ledger';
+import { onSettingsChange, setLevelProbe } from '@/src/features/queries';
 import { getDb } from './client';
 import { settings as settingsTable } from './schema';
 
@@ -41,6 +42,10 @@ export function DomainProvider({ children }: { children: ReactNode }) {
       onSettingsChange.delete(bump);
     };
   }, []);
+  useEffect(() => {
+    setLevelProbe(() => balance(ctx).level);
+    return () => setLevelProbe(null);
+  }, [ctx]);
   return <DomainContext.Provider value={ctx}>{children}</DomainContext.Provider>;
 }
 

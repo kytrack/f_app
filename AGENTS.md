@@ -27,6 +27,9 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 - Two day concepts: habits/day-close/summary use the LOGICAL day (`todayKey`, 04:00 start); events and the calendar tab use the CALENDAR day (`calendarKeyFor`). Do not mix them.
 - Recurring tasks are templates (`recurrence` set) + generated instances (`parent_task_id`); lists must filter `recurrence IS NULL`.
 - Workouts: `src/domain/workouts.ts` (plans → sessions → set_logs; points only in `finishSession`). Meals: `src/domain/meals.ts` (templates → weekly plan → snapshot logs; kcal points only in day close). Settings edits must go through `useSettingsActions` so the DomainCtx snapshot is rebuilt.
+- Celebrations: push to `src/store/celebration.ts` (`celebrate()`), never render your own overlay. Level-ups are detected in `useDomainMutation`, perfect days in `useDayClose`.
+- Stats are read-only aggregations in `src/domain/stats.ts`; charts are the View-based ones in `src/ui/charts.tsx` (no chart library).
+- Backup/restore lives in `src/backup/backup.ts` (native only); restore requires an app restart because the open connection and the DomainCtx snapshot point at the old file.
 - `Alert` is a no-op on web: use `notify()`/`confirm()` from `src/ui/notify.ts`, never `Alert.alert` directly.
 
 ## Layout

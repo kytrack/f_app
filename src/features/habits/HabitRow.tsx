@@ -16,13 +16,14 @@ export function HabitRow({ item, date }: { item: HabitWithLog; date: string }) {
   );
 }
 
-function StreakBadge({ streak }: { streak: number }) {
+function StreakBadge({ streak, freezes = 0 }: { streak: number; freezes?: number }) {
   if (streak <= 0) return null;
   const mult = multiplierFor(streak);
   return (
     <Text className="text-xs font-semibold text-warn">
       🔥 {streak}
       {mult > 1 ? ` · ×${mult}` : ''}
+      {freezes > 0 ? ` · ❄️${freezes}` : ''}
     </Text>
   );
 }
@@ -63,7 +64,7 @@ function GoodHabitRow({ item: { habit, log }, date }: { item: HabitWithLog; date
               </Text>
             ) : null}
             {skipped ? <Text className="text-xs text-ink-muted dark:text-ink-dark-muted">kihagyva</Text> : null}
-            <StreakBadge streak={habit.currentStreak} />
+            <StreakBadge streak={habit.currentStreak} freezes={habit.streakFreezesAvailable} />
           </View>
         </Pressable>
       </Link>

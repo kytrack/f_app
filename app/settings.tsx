@@ -1,4 +1,4 @@
-import { router, Stack } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSettings, useSettingsActions } from '@/src/features/settings/useSettings';
@@ -66,6 +66,11 @@ export default function SettingsScreen() {
       <Field label="A nap kezdete (óra)" keyboardType="number-pad" value={dayStart} onChangeText={setDayStart} hint="4 = a hajnali 4 előtti pipa még az előző naphoz tartozik" />
 
       <Button title="Mentés" onPress={save} disabled={update.isPending} />
+
+      <SectionTitle>Adatok</SectionTitle>
+      <Link href="/backup" asChild>
+        <Button title="Mentés, export és visszaállítás" variant="secondary" />
+      </Link>
 
       {isNativeNotifications ? (
         <>

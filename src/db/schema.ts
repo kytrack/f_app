@@ -39,6 +39,7 @@ export const settings = sqliteTable('settings', {
   fatG: integer('fat_g'),
   kcalTolerancePct: integer('kcal_tolerance_pct').notNull().default(10),
   editGraceHours: integer('edit_grace_hours').notNull().default(48),
+  onboardedAt: text('onboarded_at'),
   updatedAt: text('updated_at').notNull(),
 });
 
@@ -68,6 +69,7 @@ export const habits = sqliteTable('habits', {
   bestStreak: integer('best_streak').notNull().default(0),
   lastSuccessDate: text('last_success_date'),
   streakStartedOn: text('streak_started_on'),
+  streakFreezesAvailable: integer('streak_freezes_available').notNull().default(0), // earned every 30 days, spent instead of a reset
   reminderTime: text('reminder_time'), // 'HH:MM'
   sortOrder: integer('sort_order').notNull().default(0),
   archivedAt: text('archived_at'),

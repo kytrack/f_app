@@ -5,6 +5,7 @@
  */
 import { useMutation, useQueryClient, type UseMutationOptions } from '@tanstack/react-query';
 import { DomainError } from '@/src/domain/context';
+import { celebrate } from '@/src/store/celebration';
 
 export const ROOT_KEY = ['lifeos'] as const;
 
@@ -12,6 +13,12 @@ export const ROOT_KEY = ['lifeos'] as const;
 export const onDomainChange = new Set<() => void>();
 /** Listeners run when the settings row changed, so the DomainCtx snapshot can be rebuilt. */
 export const onSettingsChange = new Set<() => void>();
+
+/** Registered by DomainProvider: returns the current level so mutations can detect a level-up. */
+let levelProbe: (() => number) | null = null;
+export const setLevelProbe = (fn: (() => number) | null) => {
+  levelProbe = fn;
+};
 export const keys = {
   today: (date: string) => [...ROOT_KEY, 'today', date] as const,
   points: () => [...ROOT_KEY, 'points'] as const,
@@ -30,7 +37,13 @@ export function useDomainMutation<TVars, TResult>(
 ) {
   const qc = useQueryClient();
   return useMutation<TResult, Error, TVars>({
-    mutationFn: async (vars) => fn(vars),
+    mutationFn: async (vars) => {
+      const before = levelProbe?.() ?? null;
+      const result = fn(vars);
+      const after = levelProbe?.() ?? null;
+      if (before !== null && after !== null && after > before) celebrate({ type: 'level', level: after });
+      return result;
+    },
     ...options,
     onSuccess: (data, vars, ctx, mutation) => {
       qc.invalidateQueries({ queryKey: ROOT_KEY });

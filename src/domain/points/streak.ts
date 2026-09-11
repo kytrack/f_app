@@ -3,6 +3,10 @@
  * A streak only moves on SCHEDULED days; unscheduled days are transparent.
  */
 
+/** A freeze is earned every FREEZE_EVERY streak days and spent instead of a reset. */
+export const FREEZE_EVERY = 30;
+export const MAX_FREEZES = 2;
+
 export const MILESTONES = [
   { days: 7, bonus: 25 },
   { days: 30, bonus: 100 },
@@ -41,6 +45,11 @@ export function nextStreak(state: StreakState, outcome: DayOutcome): StreakState
     case 'skipped':
       return { ...state };
   }
+}
+
+/** Freezes to add when a streak reaches `streak` (1 at every FREEZE_EVERY-th day). */
+export function freezeEarned(streak: number): number {
+  return streak > 0 && streak % FREEZE_EVERY === 0 ? 1 : 0;
 }
 
 /** Bonus points earned when a streak *reaches* a milestone (exactly), otherwise 0. */

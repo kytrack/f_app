@@ -1,12 +1,13 @@
 import { format, parseISO } from 'date-fns';
 import { hu } from 'date-fns/locale';
-import { Link } from 'expo-router';
+import { Link, Redirect } from 'expo-router';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useDayClose } from '@/src/features/dayclose/useDayClose';
 import { HabitRow } from '@/src/features/habits/HabitRow';
 import { TaskRow } from '@/src/features/tasks/TaskRow';
 import { PointsHeader } from '@/src/features/today/PointsHeader';
 import { useToday } from '@/src/features/today/useToday';
+import { useSettings } from '@/src/features/settings/useSettings';
 import { Card, EmptyState, IconButton, SectionTitle } from '@/src/ui/primitives';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -14,7 +15,9 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export default function TodayScreen() {
   useDayClose();
   const { data, isLoading, refetch, isRefetching } = useToday();
+  const { data: settings } = useSettings();
 
+  if (settings && !settings.onboardedAt) return <Redirect href="/onboarding" />;
   if (isLoading || !data) return <View className="flex-1 bg-canvas dark:bg-canvas-dark" />;
 
   const { habits, tasks, date, points } = data;
@@ -26,10 +29,15 @@ export default function TodayScreen() {
       className="flex-1 bg-canvas dark:bg-canvas-dark"
       contentContainerClassName="px-4 pb-24 pt-2"
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
-      <Text className="mb-3 px-1 text-sm text-ink-muted dark:text-ink-dark-muted">
-        {capitalize(format(parseISO(date), 'EEEE, MMMM d.', { locale: hu }))}
-        {date !== format(new Date(), 'yyyy-MM-dd') ? ' · a nap hajnali 4-ig tart' : ''}
-      </Text>
+      <View className="mb-3 flex-row items-center justify-between px-1">
+        <Text className="text-sm text-ink-muted dark:text-ink-dark-muted">
+          {capitalize(format(parseISO(date), 'EEEE, MMMM d.', { locale: hu }))}
+          {date !== format(new Date(), 'yyyy-MM-dd') ? ' · a nap hajnali 4-ig tart' : ''}
+        </Text>
+        <Link href="/stats" className="text-sm font-medium text-accent dark:text-accent-dark">
+          Statisztika
+        </Link>
+      </View>
       <PointsHeader todayNet={points.net} />
 
       <SectionTitle

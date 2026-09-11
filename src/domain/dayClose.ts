@@ -20,7 +20,7 @@ import { award, penalize, pointsForDay } from './points/ledger';
 import { POINTS, evaluateKcal } from './points/rules';
 import { dayNutrition, materializeMealLogs } from './meals';
 import { workoutDoneOn } from './workouts';
-import { milestoneBonus, multiplierFor, nextStreak, type DayOutcome } from './points/streak';
+import { freezeEarned, MAX_FREEZES, milestoneBonus, multiplierFor, nextStreak, type DayOutcome } from './points/streak';
 import { materializeRecurringTasks, taskDayKey } from './tasks';
 
 export function isDayClosed(ctx: DomainCtx, date: DayKey): boolean {
@@ -56,6 +56,7 @@ function settleHabit(ctx: DomainCtx, habit: Habit, date: DayKey): 'done' | 'not_
   const log = getOrCreateLog(ctx, habit.id, date);
   let outcome: DayOutcome | null = null;
   let counted: 'done' | 'not_done' | 'excluded' = 'not_done';
+  let freezes = habit.streakFreezesAvailable;
 
   if (habit.kind === 'good') {
     if (log.status === 'done') {
@@ -67,6 +68,16 @@ function settleHabit(ctx: DomainCtx, habit: Habit, date: DayKey): 'done' | 'not_
     } else if (habit.scheduleType === 'times_per_week') {
       // Flexible habits are never penalised per day; the quota check runs on Sundays.
       outcome = null;
+      counted = 'excluded';
+    } else if (freezes > 0 && habit.currentStreak > 0) {
+      // Streak freeze: the miss is excused, no penalty, streak untouched.
+      freezes -= 1;
+      ctx.db
+        .update(habitLogs)
+        .set({ status: 'skipped', note: 'streak-fagyasztás', updatedAt: nowIso(ctx) })
+        .where(eq(habitLogs.id, log.id))
+        .run();
+      outcome = 'skipped';
       counted = 'excluded';
     } else {
       setLogStatus(ctx, log, 'missed');
@@ -127,7 +138,9 @@ function settleHabit(ctx: DomainCtx, habit: Habit, date: DayKey): 'done' | 'not_
 
   if (outcome) {
     const streak = nextStreak({ current: habit.currentStreak, best: habit.bestStreak }, outcome);
-    const bonus = outcome === 'done' || outcome === 'clean' ? milestoneBonus(streak.current) : 0;
+    const succeeded = outcome === 'done' || outcome === 'clean';
+    const bonus = succeeded ? milestoneBonus(streak.current) : 0;
+    if (succeeded) freezes = Math.min(MAX_FREEZES, freezes + freezeEarned(streak.current));
     if (bonus > 0) {
       award(ctx, {
         reason: 'streak_milestone',
@@ -143,6 +156,7 @@ function settleHabit(ctx: DomainCtx, habit: Habit, date: DayKey): 'done' | 'not_
       .set({
         currentStreak: streak.current,
         bestStreak: streak.best,
+        streakFreezesAvailable: freezes,
         lastSuccessDate: outcome === 'done' || outcome === 'clean' ? date : habit.lastSuccessDate,
         streakStartedOn:
           habit.kind === 'bad' && outcome === 'relapse' ? addDaysToKey(date, 1) : habit.streakStartedOn,

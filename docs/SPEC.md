@@ -1,6 +1,6 @@
 # LifeOS – személyes életviteli és napi szervező app (rendszerterv)
 
-> Verzió: 0.1 · Dátum: 2026-09-09 · Státusz: Fázis 3 (edzés + étkezés) kódja kész, telefonos próba következik
+> Verzió: 0.1 · Dátum: 2026-09-09 · Státusz: mind a 4 fázis lényegi része kész; telefonos próba és finomhangolás következik
 > Célközönség: egyetlen felhasználó (saját használat), később opcionális szinkron/biztonsági mentés.
 
 ---
@@ -427,6 +427,13 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Napzárás indulási napja:** a telepítés napja (users.created_at), minden nap kap összegző sort (üres nap nullákkal) – korábban az első szokás/teendő napjától indult.
 - **Beállítások képernyő** (kcal-cél, makrók, tolerancia, napkezdet óra, próba-értesítés). A `DomainCtx` beállítás-pillanatkép mentés után újraépül (`onSettingsChange`).
 
+### 4.3e Megvalósítási döntések (Fázis 4)
+
+- **Streak-fagyasztás:** minden 30. sorozatnapnál +1 (max 2, `habits.streak_freezes_available`). Ütemezett napi mulasztásnál a napzárás a reset és a −5 helyett elhasznál egyet, a napló `skipped` státuszt kap „streak-fagyasztás” jegyzettel, és a nap kimarad a perfect-day számításból. Nulla sorozatra nem költ fagyasztást.
+- **Ünneplés:** UI-szintű sor (Zustand), overlay konfettivel. Szintlépést a mutáció-wrapper észlel (szint előtte/utána), tökéletes napot a napzárás-hook (az épp lezárt napok összegzőiből).
+- **Statisztika:** `domain/stats.ts` tiszta aggregációk (`pointsHistory`, `weeklyPoints`, `habitHeatmap`, `exerciseProgress`, `kcalHistory`, `overview`); lezárt napok a `daily_summaries`-ből, a mai nap élőben. Grafikonok View-alapúak, nincs chart-függőség.
+- **Onboarding:** `settings.onboarded_at`; a Ma képernyő átirányít, amíg null. Kihagyható.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:
@@ -521,13 +528,15 @@ Minden fázis végén: **működő, telefonra telepített app**. Becslés hobbi-
 - **Kész (2026-09-11):** 105 Vitest zöld (16 új: edzés, étkezés, beállítás, napzárás kcal/edzés), tsc zöld, Android + web export sikeres, Edzés/Kaja tabok böngészőben kipróbálva. Eredeti kritérium: egy edzés naplózása 2 perc alatt, egy nap kajája 30 másodperc alatt megvan.
 
 ### Fázis 4 – Finomhangolás (folyamatos)
-- [ ] Statisztika képernyő: heti pontgörbe, szokás heatmap (GitHub-stílus), edzés-progresszió (max súly / gyakorlat), kcal trend. (`daily_summaries` + aggregációk.)
-- [ ] Streak freeze, perfect-day konfetti, szint-lépés képernyő.
-- [ ] Backup/export: titkosított DB export (`expo-file-system` + `expo-crypto`), CSV export a főkönyvről; import.
-- [ ] Opcionális sync backend: **saját blueprint** (Express + titkosított SQLite) `PUT /sync` végponttal – `updated_at`/`deleted_at` alapú last-write-wins, a főkönyv append-only merge.
-- [ ] Android home-screen widget (`react-native-android-widget`): mai szokások pipálása az app megnyitása nélkül.
-- [ ] Teljesítmény: FlashList a listákhoz, Query prefetch a tabok között.
-- [ ] Onboarding: 3 lépés (napkezdet óra, első 3 szokás, első jutalom).
+
+**Állapot (2026-09-11):** a lényegi tételek kész, 114 Vitest zöld (9 új: statisztika, streak-fagyasztás), tsc zöld, Android + web export sikeres, onboarding és statisztika böngészőben kipróbálva. Az ünneplés-overlay és a mentés csak telefonon ellenőrizhető.
+- [x] Statisztika képernyő: heti pontgörbe, szokás heatmap (GitHub-stílus), edzés-progresszió (max súly / gyakorlat), kcal trend. (`daily_summaries` + aggregációk.)
+- [x] Streak freeze, perfect-day konfetti, szint-lépés ünneplés (overlay).
+- [x] Backup/export: DB export a megosztás-lapra, CSV export a főkönyvről, visszaállítás fájlból (újraindítást kér). **Nem titkosított** – az expo-crypto nem ad AES-t, a fájl a saját tárhelyre megy; ha kell, később egy tiszta JS AES réteg tehető elé.
+- [ ] **Elhalasztva (opcionális):** sync backend: **saját blueprint** (Express + titkosított SQLite) `PUT /sync` végponttal – `updated_at`/`deleted_at` alapú last-write-wins, a főkönyv append-only merge.
+- [ ] **Elhalasztva:** Android home-screen widget – natív config plugin + development build kell hozzá (Expo Go-ban nem megy), eszköz nélkül nem ellenőrizhető.
+- [ ] **Nem szükséges most:** FlashList – a listák tíz-egynéhány eleműek, a sima ScrollView elég; a tab-váltás a közös cache miatt már azonnali.
+- [x] Onboarding: 3 lépés (napkezdet óra, kezdő szokások chipekből, első jutalom), kihagyható.
 
 ---
 

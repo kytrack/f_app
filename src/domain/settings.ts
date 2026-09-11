@@ -3,7 +3,7 @@ import { settings, type Settings } from '@/src/db/schema';
 import { DomainError, nowIso, type DomainCtx } from './context';
 
 export type SettingsPatch = Partial<
-  Pick<Settings, 'dayStartHour' | 'kcalTarget' | 'proteinG' | 'carbsG' | 'fatG' | 'kcalTolerancePct' | 'editGraceHours'>
+  Pick<Settings, 'dayStartHour' | 'kcalTarget' | 'proteinG' | 'carbsG' | 'fatG' | 'kcalTolerancePct' | 'editGraceHours' | 'onboardedAt'>
 >;
 
 export function getSettings(ctx: DomainCtx): Settings {
