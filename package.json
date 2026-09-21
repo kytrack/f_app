@@ -61,7 +61,9 @@
     "test:coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "phone:build": "eas build --platform android --profile preview",
+    "phone:update": "eas update --channel preview --message"
   },
   "private": true
 }
