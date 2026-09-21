@@ -4,6 +4,7 @@ import { Link, Redirect } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useDayClose } from '@/src/features/dayclose/useDayClose';
 import { HabitRow } from '@/src/features/habits/HabitRow';
+import { TodayMealsCard } from '@/src/features/meals/TodayMealsCard';
 import { TaskRow } from '@/src/features/tasks/TaskRow';
 import { PointsHeader } from '@/src/features/today/PointsHeader';
 import { useToday } from '@/src/features/today/useToday';
@@ -70,6 +71,8 @@ export default function TodayScreen() {
           ))}
         </Card>
       )}
+
+      <TodayMealsCard />
 
       <SectionTitle
         right={

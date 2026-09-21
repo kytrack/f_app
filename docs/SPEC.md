@@ -449,6 +449,12 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Kézi pontmódosítás** (`manual_adjust` főkönyvi sor, kötelező jegyzettel).
 - **Veszélyzóna**: „TÖRLÉS” begépelése után pontok nullázása (főkönyv, beváltások, összegzők, sorozatok) vagy minden tartalom törlése; a beállítások mindig megmaradnak. Ez az append-only főkönyv-szabály egyetlen, szándékos kivétele.
 
+### 4.3h Fix napi kaják (2026-09-21, felhasználói kérés)
+
+- **Egy lépéses felvétel** (`/meal/fixed`, `addFixedMeal`): név + kcal (+ makrók) + étkezés + napok (alapból minden nap). Létrehozza vagy frissíti az ételsablont, beteszi a heti étrendbe a választott napokra, és a mai sort azonnal legenerálja. Ugyanaz a név nem duplikál, hanem frissít. A heti étrend marad a részletes nézet, a „fix kajáim” ugyanennek (étel, étkezés) → napmaszk szerinti csoportosítása.
+- **Pipálás és előrejelzés:** a `DayNutrition` új mezői: `projectedOutcome` (mi lesz, ha minden felsorolt tétel elfogy), `plannedCount`/`plannedEaten`, makró-célok. A Kaja fül és a Ma képernyő kártyája kiírja: mennyi van hátra, és hogy a terv eléri-e, túllépi-e vagy alulmúlja-e a célt.
+- **Következetes karbantartás:** naplevétel, fix kaja törlése vagy sablon archiválása a mától kezdődő, még meg nem evett tervezett sorokat eltünteti; a megevettek érintetlenek. Sablon szerkesztésekor a még meg nem evett sorok pillanatképe frissül, a múlt nem.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:

@@ -15,6 +15,7 @@ export default function MealsAdminScreen() {
     <ScrollView className="flex-1 bg-canvas dark:bg-canvas-dark" contentContainerClassName="px-4 pb-16 pt-2">
       <Stack.Screen options={{ title: 'Kaja kezelése' }} />
       <Card className="py-1">
+        <NavRow href="/meal/fixed" title="Fix kajáim" body="A napi fix ételek: egyszer felveszed, utána csak pipálod." />
         <NavRow href="/meal/plan" title="Heti étrend" body="Melyik nap melyik étkezésre mit tervezel." />
         <NavRow href="/settings" title="Kalóriacél és makrók" body="Napi kcal, fehérje, szénhidrát, zsír, tolerancia." />
       </Card>

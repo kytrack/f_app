@@ -6,6 +6,11 @@ import { todayKey } from '@/src/domain/context';
 import {
   addAdHocMeal,
   addCustomMeal,
+  addFixedMeal,
+  fixedMeals,
+  removeFixedMeal,
+  setFixedMealDays,
+  type FixedMealInput,
   addPlanItem,
   archiveTemplate,
   copyWeekday,
@@ -33,6 +38,11 @@ export function useDayNutrition() {
       return dayNutrition(ctx, date);
     },
   });
+}
+
+export function useFixedMeals() {
+  const ctx = useDomain();
+  return useQuery({ queryKey: [...ROOT_KEY, 'fixedMeals'], queryFn: () => fixedMeals(ctx) });
 }
 
 export function useMealTemplates() {
@@ -79,5 +89,12 @@ export function useMealActions() {
   );
   const removePlan = useDomainMutation((id: string) => removePlanItem(ctx, id));
   const copyDay = useDomainMutation(({ from, to }: { from: number; to: number[] }) => copyWeekday(ctx, from, to));
-  return { toggle, addAdHoc, addCustom, remove, createTpl, updateTpl, archiveTpl, addPlan, removePlan, copyDay };
+  const addFixed = useDomainMutation((input: FixedMealInput) => addFixedMeal(ctx, input));
+  const setFixedDays = useDomainMutation(({ templateId, slot, mask }: { templateId: string; slot: MealSlot; mask: number }) =>
+    setFixedMealDays(ctx, templateId, slot, mask),
+  );
+  const removeFixed = useDomainMutation(({ templateId, slot }: { templateId: string; slot: MealSlot }) =>
+    removeFixedMeal(ctx, templateId, slot),
+  );
+  return { addFixed, setFixedDays, removeFixed, toggle, addAdHoc, addCustom, remove, createTpl, updateTpl, archiveTpl, addPlan, removePlan, copyDay };
 }
