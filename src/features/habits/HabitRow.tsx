@@ -1,7 +1,9 @@
 import { Link } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { cleanDays, type HabitWithLog } from '@/src/domain/habits';
+import { relapseTotal } from '@/src/domain/points/rules';
 import { multiplierFor } from '@/src/domain/points/streak';
+import { useRules } from '@/src/features/admin/useAdmin';
 import { CheckCircle } from '@/src/ui/CheckCircle';
 import { IconButton, usePalette } from '@/src/ui/primitives';
 import { confirm, notifyError } from '@/src/ui/notify';
@@ -17,8 +19,9 @@ export function HabitRow({ item, date }: { item: HabitWithLog; date: string }) {
 }
 
 function StreakBadge({ streak, freezes = 0 }: { streak: number; freezes?: number }) {
+  const rules = useRules();
   if (streak <= 0) return null;
-  const mult = multiplierFor(streak);
+  const mult = multiplierFor(streak, rules);
   return (
     <Text className="text-xs font-semibold text-warn">
       🔥 {streak}
@@ -30,6 +33,7 @@ function StreakBadge({ streak, freezes = 0 }: { streak: number; freezes?: number
 
 function GoodHabitRow({ item: { habit, log }, date }: { item: HabitWithLog; date: string }) {
   const { tap, setCount } = useHabitActions();
+  const rules = useRules();
   const count = log?.count ?? 0;
   const done = log?.status === 'done';
   const skipped = log?.status === 'skipped';
@@ -75,7 +79,7 @@ function GoodHabitRow({ item: { habit, log }, date }: { item: HabitWithLog; date
         />
       ) : null}
       <Text className="w-10 text-right text-xs font-semibold text-ink-muted dark:text-ink-dark-muted">
-        +{Math.round(habit.pointsSuccess * multiplierFor(habit.currentStreak))}
+        +{Math.round(habit.pointsSuccess * multiplierFor(habit.currentStreak, rules))}
       </Text>
     </View>
   );
@@ -91,6 +95,7 @@ function BadHabitRow({
   date: string;
 }) {
   const { relapse } = useHabitActions();
+  const rules = useRules();
   const p = usePalette();
   const relapses = log?.status === 'relapse' ? log.count : 0;
   const clean = cleanDays(habit, date);
@@ -116,7 +121,7 @@ function BadHabitRow({
           </Text>
           {relapses > 0 ? (
             <Text className="text-xs font-semibold text-danger">
-              ma {relapses}× visszaesés · −{Math.min(relapses * habit.pointsPenalty * 2, 30)}
+              ma {relapses}× visszaesés · −{relapseTotal(relapses, habit.pointsPenalty, rules)}
             </Text>
           ) : (
             <Text className="text-xs font-semibold text-success">

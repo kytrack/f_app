@@ -4,6 +4,7 @@ import type { ComponentProps } from 'react';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { useSettings } from '@/src/features/settings/useSettings';
 import { palette } from '@/src/ui/tokens';
 
 type TabIcon = ComponentProps<typeof SymbolView>['name'];
@@ -38,6 +39,14 @@ const TABS: { name: string; title: string; icon: TabIcon }[] = [
 
 export default function TabLayout() {
   const p = palette(useColorScheme() === 'dark' ? 'dark' : 'light');
+  const { data: settings } = useSettings();
+  const enabled: Record<string, boolean> = {
+    index: true,
+    calendar: settings?.modCalendar ?? true,
+    workout: settings?.modWorkout ?? true,
+    meals: settings?.modMeals ?? true,
+    rewards: settings?.modRewards ?? true,
+  };
 
   return (
     <Tabs
@@ -55,6 +64,8 @@ export default function TabLayout() {
           name={tab.name}
           options={{
             title: tab.title,
+            // href: null removes the tab from the bar; the route itself stays reachable from /admin.
+            ...(enabled[tab.name] ? {} : { href: null }),
             tabBarIcon: ({ color }) => <SymbolView name={tab.icon} tintColor={color} size={26} />,
           }}
         />

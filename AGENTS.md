@@ -11,7 +11,8 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 
 ## Hard rules
 - `src/domain/**` is PURE TypeScript: no React, no React Native, no Expo imports. It is unit-tested with Vitest (`npm test`) and must stay ≥90% covered.
-- Every point change goes through `src/domain/points` + the `point_ledger` table. The ledger is append-only: never UPDATE/DELETE a row, reverse with a compensating entry.
+- Every point change goes through `src/domain/points` + the `point_ledger` table. The ledger is append-only: never UPDATE/DELETE a row, reverse with a compensating entry. The only exception is `wipeData()` in `src/domain/admin.ts` (the confirmed danger-zone reset).
+- NEVER hard-code a point value, streak threshold or percentage: read it from `ctx.settings.rules` in the domain and `useRules()` in the UI. Defaults and ranges live in `src/domain/points/config.ts`; a new rule needs a default, a range and a field in `app/admin/rules.tsx`.
 - One user action = one SQLite transaction (log row + ledger row together).
 - Design tokens live only in `design-tokens.js` (consumed by `tailwind.config.js` and `src/ui/tokens.ts`); use `className`, fall back to `palette()` only for props that cannot take a class.
 - Talk to the user in Hungarian, write code/comments/commits in English.
@@ -31,6 +32,7 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 - Stats are read-only aggregations in `src/domain/stats.ts`; charts are the View-based ones in `src/ui/charts.tsx` (no chart library).
 - Backup/restore lives in `src/backup/backup.ts` (native only); restore requires an app restart because the open connection and the DomainCtx snapshot point at the old file.
 - Notification intensity (nudges, capture prompts, quiet hours, toggles) is data in `settings` and read through `ctx.settings`; the plan in `src/domain/notifications.ts` is the only consumer. `/capture` is the quick-capture sheet; `/admin/*` are the management screens.
+- Admin: `src/domain/admin.ts` (full listings incl. archived, restore, rules, profile, manual adjust, wipe) + `src/features/admin/useAdmin.ts` + `app/admin/*`. Every new entity needs a row in `/admin` and a management screen. Module tabs are hidden via `settings.mod*` in `app/(tabs)/_layout.tsx`.
 - `Alert` is a no-op on web: use `notify()`/`confirm()` from `src/ui/notify.ts`, never `Alert.alert` directly.
 
 ## Layout

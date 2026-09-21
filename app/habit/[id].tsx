@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { z } from 'zod';
 import type { HabitInput } from '@/src/domain/habits';
+import { useRules } from '@/src/features/admin/useAdmin';
 import { useHabit, useHabitActions } from '@/src/features/habits/useHabits';
 import { confirm, notifyError } from '@/src/ui/notify';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
@@ -43,7 +44,8 @@ export default function HabitFormScreen() {
   const isNew = id === 'new';
   const { data: habit } = useHabit(isNew ? undefined : id);
   const { create, update, archive } = useHabitActions();
-  const [form, setForm] = useState<Form>(EMPTY);
+  const rules = useRules();
+  const [form, setForm] = useState<Form>({ ...EMPTY, pointsSuccess: rules.habitSuccess, pointsPenalty: rules.habitPenalty });
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
 
   useEffect(() => {
@@ -119,7 +121,7 @@ export default function HabitFormScreen() {
         value={form.kind}
         onChange={(v) => {
           set('kind', v);
-          set('pointsSuccess', v === 'bad' ? 15 : 10);
+          set('pointsSuccess', v === 'bad' ? rules.badHabitCleanDay : rules.habitSuccess);
         }}
         options={[
           { value: 'good', label: 'Jó szokás' },

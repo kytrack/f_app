@@ -1,35 +1,40 @@
-import { Link, Stack } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Stack } from 'expo-router';
+import { ScrollView } from 'react-native';
+import { useAdminCounts } from '@/src/features/admin/useAdmin';
+import { NavRow } from '@/src/ui/admin';
 import { Card, SectionTitle } from '@/src/ui/primitives';
 
-const ITEMS: { href: string; title: string; body: string }[] = [
-  { href: '/admin/habits', title: 'Szokások', body: 'Minden szokás egy helyen: szerkesztés, sorrend, archiválás, törlés, visszaállítás.' },
-  { href: '/admin/notifications', title: 'Értesítések', body: 'Mennyi lökést és kérdést kérsz naponta, csendes órák, esti összegző ideje.' },
-  { href: '/rewards', title: 'Jutalombolt', body: 'Jutalmak és áraik, beváltások.' },
-  { href: '/workout', title: 'Edzéstervek', body: 'Tervek, gyakorlatok, napok, pontok.' },
-  { href: '/meal/templates', title: 'Ételek és étrend', body: 'Sablonok kalóriával, heti étrend.' },
-  { href: '/settings', title: 'Beállítások', body: 'Kalóriacél, napkezdet, mentés és export.' },
-  { href: '/stats', title: 'Statisztika', body: 'Pontok, sorozatok, edzés, kalória.' },
-  { href: '/history', title: 'Pont-történet', body: 'Minden jóváírás és levonás.' },
-];
-
 export default function AdminScreen() {
+  const { data: c } = useAdminCounts();
   return (
     <ScrollView className="flex-1 bg-canvas dark:bg-canvas-dark" contentContainerClassName="px-4 pb-16 pt-2">
       <Stack.Screen options={{ title: 'Vezérlőpult' }} />
-      <SectionTitle>Te írod a szabályokat</SectionTitle>
+
+      <SectionTitle>Tartalom</SectionTitle>
       <Card className="py-1">
-        {ITEMS.map((item) => (
-          <Link key={item.href} href={item.href as never} asChild>
-            <Pressable className="border-b border-line py-3 active:opacity-70 dark:border-line-dark">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-ink dark:text-ink-dark">{item.title}</Text>
-                <Text className="text-ink-muted dark:text-ink-dark-muted">›</Text>
-              </View>
-              <Text className="mt-0.5 text-xs text-ink-muted dark:text-ink-dark-muted">{item.body}</Text>
-            </Pressable>
-          </Link>
-        ))}
+        <NavRow href="/admin/habits" title="Szokások" badge={c ? `${c.habits}${c.habitsArchived ? ` +${c.habitsArchived}` : ''}` : undefined} body="Szerkesztés, sorrend, pontok, emlékeztető, archiválás, törlés." />
+        <NavRow href="/admin/tasks" title="Teendők" badge={c ? `${c.tasksOpen} · ↻${c.taskTemplates}` : undefined} body="Nyitott és kész teendők, ismétlődő sablonok szerkesztése." />
+        <NavRow href="/admin/events" title="Események" badge={c?.events} body="Minden naptárbejegyzés, ismétlődés, emlékeztetők." />
+        <NavRow href="/admin/rewards" title="Jutalmak" badge={c?.rewards} body="Árak, archivált jutalmak, beváltások és teljesítésük." />
+        <NavRow href="/admin/workouts" title="Edzés" badge={c ? `${c.plans} terv · ${c.exercises} gyak.` : undefined} body="Edzéstervek, gyakorlatok átnevezése és törlése." />
+        <NavRow href="/admin/meals" title="Kaja" badge={c?.mealTemplates} body="Ételsablonok, heti étrend, kalóriacél." />
+      </Card>
+
+      <SectionTitle>Szabályok</SectionTitle>
+      <Card className="py-1">
+        <NavRow href="/admin/rules" title="Pontszabályok" body="Minden pontérték, levonás, sorozat-szorzó, mérföldkő és fagyasztás." />
+        <NavRow href="/admin/notifications" title="Értesítések" body="Lökések, kérdések, kapcsolók, csendes órák, összegző ideje." />
+        <NavRow href="/admin/modules" title="Modulok" body="Mely fülek látszanak: naptár, edzés, kaja, jutalmak." />
+        <NavRow href="/settings" title="Profil, nap, kalóriacél" body="Név, időzóna, napkezdet, szerkesztési ablak, kcal és makrók." />
+      </Card>
+
+      <SectionTitle>Adatok</SectionTitle>
+      <Card className="py-1">
+        <NavRow href="/admin/points" title="Kézi pontmódosítás" badge={c?.ledgerEntries} body="Bónusz vagy levonás jegyzettel, a főkönyvbe írva." />
+        <NavRow href="/history" title="Pont-történet" body="Minden jóváírás és levonás." />
+        <NavRow href="/stats" title="Statisztika" body="Pontok, sorozatok, edzés, kalória." />
+        <NavRow href="/backup" title="Mentés és visszaállítás" body="Adatbázis-mentés, CSV export, visszatöltés." />
+        <NavRow href="/admin/danger" title="Veszélyzóna" body="Pontok nullázása vagy minden adat törlése." />
       </Card>
     </ScrollView>
   );

@@ -13,7 +13,7 @@ import {
 import { DomainError, nowIso, todayKey, type DomainCtx } from './context';
 import { dayKeyFor, isBitSet, weekdayIndex, type DayKey } from './dates';
 import { setActiveDelta } from './points/ledger';
-import { POINTS, habitPoints } from './points/rules';
+import { habitPoints, relapseTotal } from './points/rules';
 import { multiplierFor } from './points/streak';
 
 export type HabitInput = Pick<NewHabit, 'name' | 'kind'> &
@@ -93,8 +93,9 @@ export function createHabit(ctx: DomainCtx, input: HabitInput): Habit {
       id: ctx.uuid(),
       userId: ctx.userId,
       targetCount: Math.max(1, input.targetCount ?? 1),
-      pointsSuccess: input.pointsSuccess ?? (input.kind === 'bad' ? POINTS.badHabitCleanDay : POINTS.habitSuccess),
-      pointsPenalty: input.pointsPenalty ?? POINTS.habitPenalty,
+      pointsSuccess:
+        input.pointsSuccess ?? (input.kind === 'bad' ? ctx.settings.rules.badHabitCleanDay : ctx.settings.rules.habitSuccess),
+      pointsPenalty: input.pointsPenalty ?? ctx.settings.rules.habitPenalty,
       streakStartedOn: input.kind === 'bad' ? todayKey(ctx) : null,
       createdAt: ts,
       updatedAt: ts,
@@ -206,7 +207,7 @@ export function setHabitCount(ctx: DomainCtx, habitId: string, date: DayKey, cou
       .where(eq(habitLogs.id, log.id))
       .returning()
       .get();
-    const multiplier = multiplierFor(habit.currentStreak);
+    const multiplier = multiplierFor(habit.currentStreak, c.settings.rules);
     setActiveDelta(c, {
       reason: 'habit_done',
       refType: 'habit',
@@ -214,7 +215,10 @@ export function setHabitCount(ctx: DomainCtx, habitId: string, date: DayKey, cou
       date,
       base: habit.pointsSuccess,
       multiplier,
-      desired: habitPoints({ count: clamped, target: habit.targetCount, base: habit.pointsSuccess, multiplier }),
+      desired: habitPoints(
+        { count: clamped, target: habit.targetCount, base: habit.pointsSuccess, multiplier },
+        c.settings.rules,
+      ),
     });
     return updated;
   });
@@ -271,7 +275,7 @@ export function recordRelapse(ctx: DomainCtx, habitId: string, date: DayKey, del
     const log = getOrCreateLog(c, habitId, date);
     const count = Math.max(0, log.count + delta);
     const status = count > 0 ? 'relapse' : 'pending';
-    const total = Math.min(count * habit.pointsPenalty * POINTS.badHabitRelapseFactor, POINTS.badHabitRelapseDailyCap);
+    const total = relapseTotal(count, habit.pointsPenalty, c.settings.rules);
     setActiveDelta(c, {
       reason: 'bad_habit_relapse',
       refType: 'habit',

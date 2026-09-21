@@ -1,21 +1,26 @@
 /**
- * Streak mechanics – see docs/SPEC.md §4.2.
+ * Streak mechanics – see docs/SPEC.md §4.2. Thresholds come from PointRules (user-editable).
  * A streak only moves on SCHEDULED days; unscheduled days are transparent.
  */
+import { DEFAULT_RULES, type PointRules } from './config';
 
-/** A freeze is earned every FREEZE_EVERY streak days and spent instead of a reset. */
-export const FREEZE_EVERY = 30;
-export const MAX_FREEZES = 2;
+/** Defaults under their historical names (kept for tests and docs). */
+export const FREEZE_EVERY = DEFAULT_RULES.freezeEvery;
+export const MAX_FREEZES = DEFAULT_RULES.maxFreezes;
 
-export const MILESTONES = [
-  { days: 7, bonus: 25 },
-  { days: 30, bonus: 100 },
-  { days: 100, bonus: 500 },
-] as const;
+export function milestones(rules: PointRules = DEFAULT_RULES): { days: number; bonus: number }[] {
+  return [
+    { days: rules.milestone1Days, bonus: rules.milestone1Bonus },
+    { days: rules.milestone2Days, bonus: rules.milestone2Bonus },
+    { days: rules.milestone3Days, bonus: rules.milestone3Bonus },
+  ];
+}
 
-export function multiplierFor(streak: number): number {
-  if (streak >= 30) return 1.5;
-  if (streak >= 7) return 1.25;
+export const MILESTONES = milestones();
+
+export function multiplierFor(streak: number, rules: PointRules = DEFAULT_RULES): number {
+  if (streak >= rules.streakTier2Days) return rules.streakTier2Mult;
+  if (streak >= rules.streakTier1Days) return rules.streakTier1Mult;
   return 1.0;
 }
 
@@ -47,12 +52,14 @@ export function nextStreak(state: StreakState, outcome: DayOutcome): StreakState
   }
 }
 
-/** Freezes to add when a streak reaches `streak` (1 at every FREEZE_EVERY-th day). */
-export function freezeEarned(streak: number): number {
-  return streak > 0 && streak % FREEZE_EVERY === 0 ? 1 : 0;
+/** Freezes to add when a streak reaches `streak` (1 at every freezeEvery-th day; 0 disables). */
+export function freezeEarned(streak: number, rules: PointRules = DEFAULT_RULES): number {
+  return rules.freezeEvery > 0 && streak > 0 && streak % rules.freezeEvery === 0 ? 1 : 0;
 }
 
 /** Bonus points earned when a streak *reaches* a milestone (exactly), otherwise 0. */
-export function milestoneBonus(streak: number): number {
-  return MILESTONES.find((m) => m.days === streak)?.bonus ?? 0;
+export function milestoneBonus(streak: number, rules: PointRules = DEFAULT_RULES): number {
+  return milestones(rules)
+    .filter((m) => m.days === streak)
+    .reduce((a, m) => a + m.bonus, 0);
 }

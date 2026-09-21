@@ -5,6 +5,7 @@
 import * as Crypto from 'expo-crypto';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { DomainCtx } from '@/src/domain/context';
+import { parseRules } from '@/src/domain/points/config';
 import { balance } from '@/src/domain/points/ledger';
 import { onSettingsChange, setLevelProbe } from '@/src/features/queries';
 import { getDb } from './client';
@@ -23,6 +24,7 @@ export function buildDomainCtx(): DomainCtx {
       editGraceHours: row.editGraceHours,
       kcalTolerancePct: row.kcalTolerancePct,
       kcalTarget: row.kcalTarget,
+      rules: parseRules(row.pointRules),
       notifHabits: row.notifHabits,
       notifTasks: row.notifTasks,
       notifEvents: row.notifEvents,

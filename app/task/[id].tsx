@@ -8,6 +8,7 @@ import { todayKey } from '@/src/domain/context';
 import { addDaysToKey } from '@/src/domain/dates';
 import type { TaskInput } from '@/src/domain/tasks';
 import { confirm, notifyError } from '@/src/ui/notify';
+import { useRules } from '@/src/features/admin/useAdmin';
 import { useTask, useTaskActions } from '@/src/features/tasks/useTasks';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
 import { parseRecurrence } from '@/src/domain/recurrence';
@@ -51,6 +52,7 @@ export default function TaskFormScreen() {
   const { data: task } = useTask(isNew ? undefined : id);
   const { create, update, remove } = useTaskActions();
   const ctx = useDomain();
+  const rules = useRules();
   const [form, setForm] = useState<Form>(() => (day ? { ...EMPTY, due: 'custom', customDate: day } : EMPTY));
   const [recurrence, setRecurrence] = useState<RecurrenceForm>(EMPTY_RECURRENCE);
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
@@ -134,9 +136,9 @@ export default function TaskFormScreen() {
         value={form.priority}
         onChange={(v) => set('priority', v)}
         options={[
-          { value: '1', label: 'Alacsony · 5' },
-          { value: '2', label: 'Közepes · 10' },
-          { value: '3', label: 'Fontos · 20' },
+          { value: '1', label: `Alacsony · ${rules.taskLow}` },
+          { value: '2', label: `Közepes · ${rules.taskMid}` },
+          { value: '3', label: `Fontos · ${rules.taskHigh}` },
         ]}
       />
       <Segmented
@@ -183,8 +185,8 @@ export default function TaskFormScreen() {
         placeholder="opcionális"
       />
       <Text className="mb-4 text-xs text-ink-muted dark:text-ink-dark-muted">
-        Határidő után teljesítve a pont fele jár, lejárt és kész nélkül hagyott teendőért egyszer −5. Egy órával a
-        határidő előtt emlékeztetőt kapsz.
+        Határidő után teljesítve a pont {rules.taskLatePct}%-a jár, lejárt és kész nélkül hagyott teendőért egyszer −
+        {rules.taskOverdue}. Egy órával a határidő előtt emlékeztetőt kapsz.
       </Text>
       <Button title={isNew ? 'Létrehozás' : 'Mentés'} onPress={submit} disabled={create.isPending || update.isPending} />
       {!isNew ? <Button title="Törlés" variant="danger" className="mt-3" onPress={confirmDelete} /> : null}

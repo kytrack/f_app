@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { PlanInput } from '@/src/domain/workouts';
+import { useRules } from '@/src/features/admin/useAdmin';
 import { usePlan, usePlanActions } from '@/src/features/workouts/useWorkouts';
 import { confirm, notifyError } from '@/src/ui/notify';
 import { Button, Field, IconButton } from '@/src/ui/primitives';
@@ -27,7 +28,8 @@ export default function PlanFormScreen() {
   const { create, update, archive } = usePlanActions();
   const [name, setName] = useState('');
   const [mask, setMask] = useState(0);
-  const [points, setPoints] = useState('30');
+  const rules = useRules();
+  const [points, setPoints] = useState(String(rules.workoutComplete));
   const [rows, setRows] = useState<Row[]>([newRow()]);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +60,7 @@ export default function PlanFormScreen() {
     const input: PlanInput = {
       name,
       weekdayMask: mask,
-      pointsComplete: Number(points) || 30,
+      pointsComplete: Number(points) || rules.workoutComplete,
       exercises: list.map((r) => ({
         exerciseId: r.exerciseId,
         name: r.name,
@@ -109,7 +111,7 @@ export default function PlanFormScreen() {
         keyboardType="number-pad"
         value={points}
         onChangeText={setPoints}
-        hint="Legalább 80% szett → teljes pont, 50–79% → fele, alatta semmi"
+        hint={`Legalább ${rules.workoutFullPct}% szett → teljes pont, ${rules.workoutHalfPct}% felett fele, alatta semmi`}
       />
 
       <Text className="mb-2 text-sm font-medium text-ink dark:text-ink-dark">Gyakorlatok</Text>

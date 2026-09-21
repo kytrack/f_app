@@ -18,7 +18,7 @@ import { DomainError, nowIso, todayKey, type DomainCtx } from './context';
 import { isBitSet, weekdayIndex, type DayKey } from './dates';
 import { assertEditable } from './habits';
 import { award, reverseActive } from './points/ledger';
-import { POINTS, workoutPoints } from './points/rules';
+import { workoutPoints } from './points/rules';
 
 // ---------------------------------------------------------------- exercises
 
@@ -136,7 +136,7 @@ export function createPlan(ctx: DomainCtx, input: PlanInput): PlanDetail {
         userId: c.userId,
         name: input.name.trim(),
         weekdayMask: input.weekdayMask ?? 0,
-        pointsComplete: input.pointsComplete ?? POINTS.workoutComplete,
+        pointsComplete: input.pointsComplete ?? c.settings.rules.workoutComplete,
         createdAt: ts,
         updatedAt: ts,
       })
@@ -358,7 +358,10 @@ export function finishSession(ctx: DomainCtx, sessionId: string): SessionDetail 
       refType: 'workout_session',
       refId: sessionId,
       date: detail.session.date,
-      base: workoutPoints({ completionPct, base: detail.plan?.pointsComplete ?? POINTS.workoutComplete }),
+      base: workoutPoints(
+        { completionPct, base: detail.plan?.pointsComplete ?? c.settings.rules.workoutComplete },
+        c.settings.rules,
+      ),
       note: `${completionPct}%`,
     });
     return getSession(c, sessionId);

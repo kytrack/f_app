@@ -195,7 +195,7 @@ export function completeTask(ctx: DomainCtx, id: string): Task {
       refType: 'task',
       refId: task.id,
       date: today,
-      base: taskPoints({ priority: task.priority as TaskPriority, override: task.points, late }),
+      base: taskPoints({ priority: task.priority as TaskPriority, override: task.points, late }, c.settings.rules),
       note: late ? 'késve' : undefined,
     });
     return tx

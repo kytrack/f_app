@@ -3,6 +3,7 @@ import { migrate } from 'drizzle-orm/sql-js/migrator';
 import initSqlJs from 'sql.js';
 import * as schema from '@/src/db/schema';
 import { DEFAULT_NOTIFICATION_SETTINGS, type DomainCtx } from '@/src/domain/context';
+import { DEFAULT_RULES } from '@/src/domain/points/config';
 
 const TZ = 'Europe/Budapest';
 
@@ -40,6 +41,7 @@ export async function createTestWorld(startAt = '2026-09-09T10:00:00Z'): Promise
       editGraceHours: 48,
       kcalTolerancePct: 10,
       kcalTarget: null,
+      rules: { ...DEFAULT_RULES },
     },
     now: () => now,
     uuid: () => `id-${++counter}`,

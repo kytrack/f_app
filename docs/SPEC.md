@@ -440,6 +440,15 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Gyors rögzítés** (`/capture`): egy sor → teendő (ma/holnap/dátum/bármikor), naptár-esemény (1 óra, 15 perces emlékeztető) vagy jegyzet (határidő nélküli teendő). Megnyitáskor is felugrik, legfeljebb N óránként (`capture_on_open_hours`, 0 = soha), csendes órákban soha; a Ma képernyőn állandó beviteli sáv is van.
 - **Vezérlőpult** (`/admin`): minden kezelőfelület egy helyről. **Szokás-kezelő** (`/admin/habits`): aktív és archivált lista, sorrend ↑↓, szerkesztés, archiválás/visszaállítás, végleges (soft) törlés a történet megtartásával.
 
+### 4.3g Teljes admin-felület (2026-09-21, felhasználói kérés)
+
+- **Állítható pontszabályok** (`src/domain/points/config.ts`, `/admin/rules`): a 4.1 táblázat minden száma, a sorozat-szorzók (nap + szorzó két szinten), a három mérföldkő (nap + bónusz) és a fagyasztás (gyakoriság, plafon) szerkeszthető. A `settings.point_rules` JSON csak az alapértéktől ELTÉRŐ kulcsokat tárolja; betöltéskor minden hiányzó vagy érvénytelen érték az alapértékre esik vissza, így a pontmotor sosem törhet el. A szabályok a `ctx.settings.rules`-on át jutnak a domainbe; a már jóváírt pontok nem számolódnak újra.
+- **Modulok** (`/admin/modules`): naptár, edzés, kaja, jutalmak füle ki/bekapcsolható (`mod_*` oszlopok). Az adat megmarad, csak a fül tűnik el.
+- **Tartalomkezelők**: szokások (korábbról), **teendők** (az addig sehol nem látható ismétlődő sablonok szerkesztése/törlése, nyitott és kész lista), **események** (ismétlődő / közelgő / korábbi), **jutalmak** (archivált visszaállítása, beváltások „megvolt” jelöléssel), **edzés** (archivált tervek, gyakorlatok átnevezése, törlés csak ha aktív terv nem használja), **kaja** (archivált sablonok, étrend, kcal-cél).
+- **Profil** a Beállításokban: név, IANA időzóna (validálva), visszamenőleges szerkesztési ablak órában.
+- **Kézi pontmódosítás** (`manual_adjust` főkönyvi sor, kötelező jegyzettel).
+- **Veszélyzóna**: „TÖRLÉS” begépelése után pontok nullázása (főkönyv, beváltások, összegzők, sorozatok) vagy minden tartalom törlése; a beállítások mindig megmaradnak. Ez az append-only főkönyv-szabály egyetlen, szándékos kivétele.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:

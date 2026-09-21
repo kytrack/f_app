@@ -26,6 +26,10 @@ export type SettingsPatch = Partial<
     | 'summaryTime'
     | 'captureOnOpenHours'
     | 'lastCapturePromptAt'
+    | 'modCalendar'
+    | 'modWorkout'
+    | 'modMeals'
+    | 'modRewards'
   >
 >;
 

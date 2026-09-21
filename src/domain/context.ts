@@ -5,6 +5,7 @@
 import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
 import type * as schema from '@/src/db/schema';
 import { dayKeyFor, type DayKey } from './dates';
+import type { PointRules } from './points/config';
 
 // Both ExpoSQLiteDatabase and SQLJsDatabase are 'sync' BaseSQLiteDatabases, and a
 // SQLiteTransaction extends BaseSQLiteDatabase too, so helpers accept db or tx alike.
@@ -47,6 +48,8 @@ export interface DomainSettings extends NotificationSettings {
   editGraceHours: number;
   kcalTolerancePct: number;
   kcalTarget: number | null;
+  /** User-editable point rules (defaults merged in). */
+  rules: PointRules;
 }
 
 export interface DomainCtx {

@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 import type { Task } from '@/src/db/schema';
 import { taskPoints, type TaskPriority } from '@/src/domain/points/rules';
 import { CheckCircle } from '@/src/ui/CheckCircle';
+import { useRules } from '@/src/features/admin/useAdmin';
 import { usePalette } from '@/src/ui/primitives';
 import { notifyError } from '@/src/ui/notify';
 import { useTaskActions } from './useTasks';
@@ -14,12 +15,13 @@ const PRIORITY_LABEL: Record<number, string> = { 1: 'alacsony', 2: 'közepes', 3
 export function TaskRow({ task, overdue = false }: { task: Task; overdue?: boolean }) {
   const { toggle } = useTaskActions();
   const p = usePalette();
+  const rules = useRules();
   const done = !!task.completedAt;
   // Shown points = what completing now would earn, or what completing did earn.
   const late =
     !!task.dueAt &&
     (task.completedAt ? task.completedAt > task.dueAt : new Date(task.dueAt).getTime() < Date.now());
-  const points = taskPoints({ priority: task.priority as TaskPriority, override: task.points, late });
+  const points = taskPoints({ priority: task.priority as TaskPriority, override: task.points, late }, rules);
 
   return (
     <View className="flex-row items-center gap-3 border-b border-line py-3 dark:border-line-dark">

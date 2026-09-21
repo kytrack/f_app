@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { SetLog } from '@/src/db/schema';
 import { workoutPoints } from '@/src/domain/points/rules';
 import type { SessionDetail } from '@/src/domain/workouts';
+import { useRules } from '@/src/features/admin/useAdmin';
 import { useSession, useSessionActions } from '@/src/features/workouts/useWorkouts';
 import { CheckCircle } from '@/src/ui/CheckCircle';
 import { confirm, notifyError } from '@/src/ui/notify';
@@ -13,12 +14,13 @@ export default function SessionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data } = useSession(id);
   const { finish, reopen, discard } = useSessionActions();
+  const rules = useRules();
   if (!data) return <View className="flex-1 bg-canvas dark:bg-canvas-dark" />;
 
   const { session, plan, exercises, doneSets, totalSets } = data;
   const finished = !!session.finishedAt;
   const pct = totalSets ? Math.round((doneSets / totalSets) * 100) : 0;
-  const projected = workoutPoints({ completionPct: pct, base: plan?.pointsComplete ?? 30 });
+  const projected = workoutPoints({ completionPct: pct, base: plan?.pointsComplete ?? rules.workoutComplete }, rules);
 
   const confirmFinish = () =>
     confirm({

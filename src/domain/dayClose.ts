@@ -17,10 +17,10 @@ import { nowIso, todayKey, type DomainCtx } from './context';
 import { addDaysToKey, dayKeyFor, dayRange, weekdayIndex, type DayKey } from './dates';
 import { scheduledHabitsOn } from './habits';
 import { award, penalize, pointsForDay } from './points/ledger';
-import { POINTS, evaluateKcal } from './points/rules';
+import { evaluateKcal } from './points/rules';
 import { dayNutrition, materializeMealLogs } from './meals';
 import { workoutDoneOn } from './workouts';
-import { freezeEarned, MAX_FREEZES, milestoneBonus, multiplierFor, nextStreak, type DayOutcome } from './points/streak';
+import { freezeEarned, milestoneBonus, multiplierFor, nextStreak, type DayOutcome } from './points/streak';
 import { materializeRecurringTasks, taskDayKey } from './tasks';
 
 export function isDayClosed(ctx: DomainCtx, date: DayKey): boolean {
@@ -101,7 +101,7 @@ function settleHabit(ctx: DomainCtx, habit: Habit, date: DayKey): 'done' | 'not_
         refId: habit.id,
         date,
         base: habit.pointsSuccess,
-        multiplier: multiplierFor(habit.currentStreak),
+        multiplier: multiplierFor(habit.currentStreak, ctx.settings.rules),
       });
       outcome = 'clean';
       counted = 'done';
@@ -139,8 +139,10 @@ function settleHabit(ctx: DomainCtx, habit: Habit, date: DayKey): 'done' | 'not_
   if (outcome) {
     const streak = nextStreak({ current: habit.currentStreak, best: habit.bestStreak }, outcome);
     const succeeded = outcome === 'done' || outcome === 'clean';
-    const bonus = succeeded ? milestoneBonus(streak.current) : 0;
-    if (succeeded) freezes = Math.min(MAX_FREEZES, freezes + freezeEarned(streak.current));
+    const bonus = succeeded ? milestoneBonus(streak.current, ctx.settings.rules) : 0;
+    if (succeeded) {
+      freezes = Math.min(ctx.settings.rules.maxFreezes, freezes + freezeEarned(streak.current, ctx.settings.rules));
+    }
     if (bonus > 0) {
       award(ctx, {
         reason: 'streak_milestone',
@@ -204,7 +206,7 @@ export function closeDay(ctx: DomainCtx, date: DayKey): DailySummary | null {
     for (const t of open) {
       const due = taskDayKey(c, t);
       if (due !== null && due <= date) {
-        penalize(c, { reason: 'task_overdue', refType: 'task', refId: t.id, date, base: POINTS.taskOverdue });
+        penalize(c, { reason: 'task_overdue', refType: 'task', refId: t.id, date, base: c.settings.rules.taskOverdue });
         tx.update(tasks).set({ overduePenalizedAt: nowIso(c) }).where(eq(tasks.id, t.id)).run();
       }
     }
@@ -225,15 +227,15 @@ export function closeDay(ctx: DomainCtx, date: DayKey): DailySummary | null {
     const nutrition = dayNutrition(c, date);
     const kcalOutcome = evaluateKcal({ eaten: nutrition.eatenKcal, target: c.settings.kcalTarget, tolerancePct: c.settings.kcalTolerancePct });
     if (kcalOutcome === 'hit') {
-      award(c, { reason: 'kcal_goal_hit', refType: 'day', refId: date, date, base: POINTS.kcalGoalHit });
+      award(c, { reason: 'kcal_goal_hit', refType: 'day', refId: date, date, base: c.settings.rules.kcalGoalHit });
     } else if (kcalOutcome === 'over') {
-      penalize(c, { reason: 'kcal_goal_missed', refType: 'day', refId: date, date, base: POINTS.kcalGoalMissed });
+      penalize(c, { reason: 'kcal_goal_missed', refType: 'day', refId: date, date, base: c.settings.rules.kcalGoalMissed });
     }
 
     // --- perfect day
     const perfectDay = habitsScheduled > 0 && habitsDone === habitsScheduled && tasksDone === tasksDue;
     if (perfectDay) {
-      award(c, { reason: 'perfect_day', refType: 'day', refId: date, date, base: POINTS.perfectDay });
+      award(c, { reason: 'perfect_day', refType: 'day', refId: date, date, base: c.settings.rules.perfectDay });
     }
 
     const pts = pointsForDay(c, date);

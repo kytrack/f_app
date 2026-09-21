@@ -54,6 +54,12 @@ export const settings = sqliteTable('settings', {
   summaryTime: text('summary_time').notNull().default('20:00'),
   captureOnOpenHours: integer('capture_on_open_hours').notNull().default(4), // ask in-app at most every N hours (0 = never)
   lastCapturePromptAt: text('last_capture_prompt_at'),
+  // --- admin
+  pointRules: text('point_rules'), // JSON diff over DEFAULT_RULES (src/domain/points/config.ts)
+  modCalendar: integer('mod_calendar', { mode: 'boolean' }).notNull().default(true),
+  modWorkout: integer('mod_workout', { mode: 'boolean' }).notNull().default(true),
+  modMeals: integer('mod_meals', { mode: 'boolean' }).notNull().default(true),
+  modRewards: integer('mod_rewards', { mode: 'boolean' }).notNull().default(true),
   updatedAt: text('updated_at').notNull(),
 });
 

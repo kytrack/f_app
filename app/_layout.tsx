@@ -122,6 +122,15 @@ function RootLayoutNav() {
         <Stack.Screen name="admin/index" />
         <Stack.Screen name="admin/habits" />
         <Stack.Screen name="admin/notifications" />
+        <Stack.Screen name="admin/rules" />
+        <Stack.Screen name="admin/modules" />
+        <Stack.Screen name="admin/tasks" />
+        <Stack.Screen name="admin/events" />
+        <Stack.Screen name="admin/rewards" />
+        <Stack.Screen name="admin/workouts" />
+        <Stack.Screen name="admin/meals" />
+        <Stack.Screen name="admin/points" />
+        <Stack.Screen name="admin/danger" />
       </Stack>
       <CelebrationOverlay />
     </ThemeProvider>

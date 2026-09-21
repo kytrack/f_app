@@ -1,6 +1,7 @@
 import { Link, router, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+import { useAdminActions, useProfile } from '@/src/features/admin/useAdmin';
 import { useSettings, useSettingsActions } from '@/src/features/settings/useSettings';
 import { isNativeNotifications, sendTestNotification } from '@/src/notifications/scheduler';
 import { notify, notifyError } from '@/src/ui/notify';
@@ -9,6 +10,11 @@ import { Button, Field, SectionTitle } from '@/src/ui/primitives';
 export default function SettingsScreen() {
   const { data } = useSettings();
   const { update } = useSettingsActions();
+  const { data: profile } = useProfile();
+  const { saveProfile } = useAdminActions();
+  const [name, setName] = useState('');
+  const [timezone, setTimezone] = useState('');
+  const [grace, setGrace] = useState('48');
   const [kcal, setKcal] = useState('');
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
@@ -26,9 +32,22 @@ export default function SettingsScreen() {
     setDayStart(String(data.dayStartHour));
   }, [data]);
 
+  useEffect(() => {
+    if (!profile) return;
+    setName(profile.displayName);
+    setTimezone(profile.timezone);
+    setGrace(String(profile.editGraceHours));
+  }, [profile]);
+
   const num = (s: string) => (s.trim() === '' ? null : Number(s));
 
   const save = () =>
+    saveProfile.mutate(
+      { displayName: name, timezone: timezone.trim(), editGraceHours: Number(grace) || 0 },
+      { onSuccess: saveSettings, onError: (e) => notifyError(e, 'Nem sikerült') },
+    );
+
+  const saveSettings = () =>
     update.mutate(
       {
         kcalTarget: num(kcal),
@@ -47,6 +66,11 @@ export default function SettingsScreen() {
       contentContainerClassName="p-4 pb-16"
       keyboardShouldPersistTaps="handled">
       <Stack.Screen options={{ title: 'Beállítások' }} />
+      <SectionTitle>Profil</SectionTitle>
+      <Field label="Név" value={name} onChangeText={setName} placeholder="Én" />
+      <Field label="Időzóna" value={timezone} onChangeText={setTimezone} autoCapitalize="none" placeholder="Europe/Budapest" hint="IANA név. Ez alapján számolódik a nap és minden emlékeztető." />
+      <Field label="Visszamenőleges szerkesztés (óra)" keyboardType="number-pad" value={grace} onChangeText={setGrace} hint="Ennyi ideig pipálhatsz vagy vonhatsz vissza egy korábbi napon. 48 = két nap." />
+
       <SectionTitle>Táplálkozási cél</SectionTitle>
       <Field label="Napi kalória (kcal)" keyboardType="number-pad" value={kcal} onChangeText={setKcal} placeholder="2000" hint="Üresen hagyva nincs kcal-pontozás" />
       <View className="flex-row gap-3">
@@ -65,7 +89,7 @@ export default function SettingsScreen() {
       <SectionTitle>Nap</SectionTitle>
       <Field label="A nap kezdete (óra)" keyboardType="number-pad" value={dayStart} onChangeText={setDayStart} hint="4 = a hajnali 4 előtti pipa még az előző naphoz tartozik" />
 
-      <Button title="Mentés" onPress={save} disabled={update.isPending} />
+      <Button title="Mentés" onPress={save} disabled={update.isPending || saveProfile.isPending} />
 
       <SectionTitle>Értesítések részletesen</SectionTitle>
       <Link href="/admin/notifications" asChild>
