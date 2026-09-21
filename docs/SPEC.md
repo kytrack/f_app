@@ -455,6 +455,11 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Pipálás és előrejelzés:** a `DayNutrition` új mezői: `projectedOutcome` (mi lesz, ha minden felsorolt tétel elfogy), `plannedCount`/`plannedEaten`, makró-célok. A Kaja fül és a Ma képernyő kártyája kiírja: mennyi van hátra, és hogy a terv eléri-e, túllépi-e vagy alulmúlja-e a célt.
 - **Következetes karbantartás:** naplevétel, fix kaja törlése vagy sablon archiválása a mától kezdődő, még meg nem evett tervezett sorokat eltünteti; a megevettek érintetlenek. Sablon szerkesztésekor a még meg nem evett sorok pillanatképe frissül, a múlt nem.
 
+### 4.3i Kaja a pontrendszerben (2026-09-21, felhasználói kérés)
+
+- **Pont kajánként:** minden kipipált TERVEZETT kaja `mealEaten` pontot ad (alap: 3) `meal_eaten` főkönyvi sorként (`ref_type = meal`, a napló id-jével); visszavonásnál sztornó, újrapipálásnál egyszer fizet. Terven kívüli tétel nem ad pontot, mert a terv betartását jutalmazzuk. 0-ra állítva kikapcsol.
+- **Tökéletes nap:** ha van kcal-cél ÉS aznap van kajanapló-sor, a bónuszhoz a kalóriacél találat is kell (`perfectDayNeedsKcal` = 1, kikapcsolható 0-val). Cél nélkül vagy kajanapló nélküli napon nem feltétel, hogy a modult nem használó napok ne ragadjanak be.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:

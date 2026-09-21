@@ -18,6 +18,7 @@ import {
 import { DomainError, nowIso, todayKey, type DomainCtx } from './context';
 import { isBitSet, weekdayIndex, type DayKey } from './dates';
 import { assertEditable } from './habits';
+import { award, reverseActive } from './points/ledger';
 import { evaluateKcal, type KcalOutcome } from './points/rules';
 
 export const SLOT_LABEL: Record<MealSlot, string> = {
@@ -342,12 +343,22 @@ function getLog(ctx: DomainCtx, id: string): MealLog {
 export function toggleMeal(ctx: DomainCtx, id: string): MealLog {
   const log = getLog(ctx, id);
   assertEditable(ctx, log.date);
-  return ctx.db
-    .update(mealLogs)
-    .set({ eaten: !log.eaten, updatedAt: nowIso(ctx) })
-    .where(eq(mealLogs.id, id))
-    .returning()
-    .get();
+  const eaten = !log.eaten;
+  return ctx.db.transaction((tx) => {
+    const c = { ...ctx, db: tx };
+    // Only PLANNED meals earn points: sticking to the plan is the behaviour being rewarded.
+    if (log.planned) {
+      const key = { reason: 'meal_eaten', refType: 'meal', refId: log.id, date: log.date } as const;
+      if (eaten) award(c, { ...key, base: c.settings.rules.mealEaten, note: log.nameSnapshot });
+      else reverseActive(c, key, 'visszavonva');
+    }
+    return tx
+      .update(mealLogs)
+      .set({ eaten, updatedAt: nowIso(c) })
+      .where(eq(mealLogs.id, id))
+      .returning()
+      .get();
+  });
 }
 
 /** Logs a template as eaten right now (not part of the plan). */

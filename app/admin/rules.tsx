@@ -42,9 +42,11 @@ const SECTIONS: { title: string; hint?: string; fields: { key: Key; label: strin
   {
     title: 'Kalória és nap',
     fields: [
+      { key: 'mealEaten', label: 'Kipipált fix kaja pontja' },
       { key: 'kcalGoalHit', label: 'Kalóriacél találat' },
       { key: 'kcalGoalMissed', label: 'Kalóriacél túllépés levonása' },
       { key: 'perfectDay', label: 'Tökéletes nap bónusz' },
+      { key: 'perfectDayNeedsKcal', label: 'Tökéletes naphoz kell a kcal-cél (1/0)' },
     ],
   },
   {

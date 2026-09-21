@@ -19,6 +19,7 @@ const REASON_LABEL: Record<LedgerReason, string> = {
   reward_redeem: 'Jutalom beváltva',
   reversal: 'Visszavonás',
   manual_adjust: 'Kézi módosítás',
+  meal_eaten: 'Kaja megvolt',
 };
 
 export default function HistoryScreen() {

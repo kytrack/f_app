@@ -340,10 +340,11 @@ export const LEDGER_REASONS = [
   'reward_redeem',
   'reversal',
   'manual_adjust',
+  'meal_eaten',
 ] as const;
 export type LedgerReason = (typeof LEDGER_REASONS)[number];
 
-export const LEDGER_REF_TYPES = ['habit', 'task', 'workout_session', 'day', 'reward'] as const;
+export const LEDGER_REF_TYPES = ['habit', 'task', 'workout_session', 'day', 'reward', 'meal'] as const;
 export type LedgerRefType = (typeof LEDGER_REF_TYPES)[number];
 
 /** APPEND-ONLY. Never UPDATE or DELETE a row; undo with a 'reversal' row. */

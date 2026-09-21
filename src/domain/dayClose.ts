@@ -233,7 +233,10 @@ export function closeDay(ctx: DomainCtx, date: DayKey): DailySummary | null {
     }
 
     // --- perfect day
-    const perfectDay = habitsScheduled > 0 && habitsDone === habitsScheduled && tasksDone === tasksDue;
+    // On days where meals are tracked and a kcal target exists, the goal is part of a perfect day (rule-controlled).
+    const mealsTracked = c.settings.kcalTarget !== null && nutrition.slots.some((s) => s.logs.length > 0);
+    const kcalOk = c.settings.rules.perfectDayNeedsKcal !== 1 || !mealsTracked || kcalOutcome === 'hit';
+    const perfectDay = habitsScheduled > 0 && habitsDone === habitsScheduled && tasksDone === tasksDue && kcalOk;
     if (perfectDay) {
       award(c, { reason: 'perfect_day', refType: 'day', refId: date, date, base: c.settings.rules.perfectDay });
     }

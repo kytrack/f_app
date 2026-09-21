@@ -23,6 +23,8 @@ export interface PointRules {
   workoutFullPct: number; // >= this % of sets → full points
   workoutHalfPct: number; // >= this % → half points
   // nutrition + day
+  mealEaten: number; // points for ticking one PLANNED meal (ad-hoc entries earn nothing)
+  perfectDayNeedsKcal: number; // 1 = the perfect-day bonus also needs the kcal goal (on days with meals logged), 0 = habits + tasks only
   kcalGoalHit: number;
   kcalGoalMissed: number;
   perfectDay: number;
@@ -56,6 +58,8 @@ export const DEFAULT_RULES: PointRules = {
   workoutComplete: 30,
   workoutFullPct: 80,
   workoutHalfPct: 50,
+  mealEaten: 3,
+  perfectDayNeedsKcal: 1,
   kcalGoalHit: 20,
   kcalGoalMissed: 10,
   perfectDay: 25,
@@ -91,6 +95,8 @@ export const RULE_RANGES: Record<keyof PointRules, Range> = {
   workoutComplete: { min: 0, max: 500, integer: true },
   workoutFullPct: { min: 1, max: 100, integer: true },
   workoutHalfPct: { min: 0, max: 100, integer: true },
+  mealEaten: { min: 0, max: 500, integer: true },
+  perfectDayNeedsKcal: { min: 0, max: 1, integer: true },
   kcalGoalHit: { min: 0, max: 500, integer: true },
   kcalGoalMissed: { min: 0, max: 500, integer: true },
   perfectDay: { min: 0, max: 500, integer: true },
