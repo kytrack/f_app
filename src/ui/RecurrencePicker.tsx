@@ -83,7 +83,7 @@ export function RecurrencePicker({
               );
             })}
           </View>
-          {error ? <Text className="mt-1 text-xs text-danger">{error}</Text> : null}
+          {error ? <Text className="mt-1 text-xs text-danger dark:text-danger-dark">{error}</Text> : null}
         </View>
       ) : null}
       {value.kind === 'monthly' ? (

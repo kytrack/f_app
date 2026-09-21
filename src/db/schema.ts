@@ -27,6 +27,9 @@ export const users = sqliteTable('users', {
   updatedAt: text('updated_at').notNull(),
 });
 
+export const THEMES = ['system', 'light', 'dark'] as const;
+export type ThemePreference = (typeof THEMES)[number];
+
 export const settings = sqliteTable('settings', {
   userId: text('user_id')
     .primaryKey()
@@ -60,6 +63,7 @@ export const settings = sqliteTable('settings', {
   modWorkout: integer('mod_workout', { mode: 'boolean' }).notNull().default(true),
   modMeals: integer('mod_meals', { mode: 'boolean' }).notNull().default(true),
   modRewards: integer('mod_rewards', { mode: 'boolean' }).notNull().default(true),
+  theme: text('theme', { enum: THEMES }).notNull().default('system'),
   updatedAt: text('updated_at').notNull(),
 });
 

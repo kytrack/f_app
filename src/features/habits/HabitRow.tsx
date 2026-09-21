@@ -23,7 +23,7 @@ function StreakBadge({ streak, freezes = 0 }: { streak: number; freezes?: number
   if (streak <= 0) return null;
   const mult = multiplierFor(streak, rules);
   return (
-    <Text className="text-xs font-semibold text-warn">
+    <Text className="text-xs font-semibold text-warn dark:text-warn-dark">
       🔥 {streak}
       {mult > 1 ? ` · ×${mult}` : ''}
       {freezes > 0 ? ` · ❄️${freezes}` : ''}
@@ -120,11 +120,11 @@ function BadHabitRow({
             {habit.name}
           </Text>
           {relapses > 0 ? (
-            <Text className="text-xs font-semibold text-danger">
+            <Text className="text-xs font-semibold text-danger dark:text-danger-dark">
               ma {relapses}× visszaesés · −{relapseTotal(relapses, habit.pointsPenalty, rules)}
             </Text>
           ) : (
-            <Text className="text-xs font-semibold text-success">
+            <Text className="text-xs font-semibold text-success dark:text-success-dark">
               {clean} napja tiszta{habit.bestStreak > clean ? ` · rekord ${habit.bestStreak}` : ''}
             </Text>
           )}
@@ -139,8 +139,8 @@ function BadHabitRow({
       <Pressable
         onPress={confirmRelapse}
         accessibilityRole="button"
-        className="rounded-lg bg-danger/10 px-3 py-2 active:opacity-70">
-        <Text className="text-xs font-semibold text-danger">Visszaestem</Text>
+        className="rounded-lg bg-danger/10 dark:bg-danger-dark/15 px-3 py-2 active:opacity-70">
+        <Text className="text-xs font-semibold text-danger dark:text-danger-dark">Visszaestem</Text>
       </Pressable>
     </View>
   );

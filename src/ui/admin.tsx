@@ -40,7 +40,7 @@ export function NavRow({ href, title, body, badge }: { href: Href; title: string
         <View className="flex-row items-center justify-between">
           <Text className="flex-1 text-base font-semibold text-ink dark:text-ink-dark">{title}</Text>
           {badge !== undefined ? (
-            <Text className="mr-2 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent dark:bg-line-dark dark:text-accent-dark">
+            <Text className="mr-2 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent dark:bg-accent-soft-dark dark:text-accent-dark">
               {badge}
             </Text>
           ) : null}
@@ -65,8 +65,8 @@ export function Chip({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      className={`rounded-lg px-3 py-1.5 active:opacity-70 ${tone === 'danger' ? 'bg-danger/10' : 'bg-accent-soft dark:bg-line-dark'}`}>
-      <Text className={`text-xs font-semibold ${tone === 'danger' ? 'text-danger' : 'text-accent dark:text-accent-dark'}`}>{label}</Text>
+      className={`rounded-lg px-3 py-1.5 active:opacity-70 ${tone === 'danger' ? 'bg-danger/10 dark:bg-danger-dark/15' : 'bg-accent-soft dark:bg-accent-soft-dark'}`}>
+      <Text className={`text-xs font-semibold ${tone === 'danger' ? 'text-danger dark:text-danger-dark' : 'text-accent dark:text-accent-dark'}`}>{label}</Text>
     </Pressable>
   );
 }

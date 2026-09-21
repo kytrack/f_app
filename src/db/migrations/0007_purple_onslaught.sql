@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `theme` text DEFAULT 'system' NOT NULL;

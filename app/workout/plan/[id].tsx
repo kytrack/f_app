@@ -141,7 +141,7 @@ export default function PlanFormScreen() {
             accessibilityRole="button"
             accessibilityLabel="Törlés"
             className="mb-4 h-9 w-9 items-center justify-center">
-            <Text className="text-lg text-danger">×</Text>
+            <Text className="text-lg text-danger dark:text-danger-dark">×</Text>
           </Pressable>
         </View>
       ))}
@@ -149,7 +149,7 @@ export default function PlanFormScreen() {
         <IconButton label="+" onPress={() => setRows((rs) => [...rs, newRow()])} />
         <Text className="ml-3 self-center text-sm text-ink-muted dark:text-ink-dark-muted">gyakorlat hozzáadása</Text>
       </View>
-      {error ? <Text className="mb-3 text-sm text-danger">{error}</Text> : null}
+      {error ? <Text className="mb-3 text-sm text-danger dark:text-danger-dark">{error}</Text> : null}
       <Button title={isNew ? 'Létrehozás' : 'Mentés'} onPress={submit} disabled={create.isPending || update.isPending} />
       {!isNew ? <Button title="Archiválás" variant="danger" className="mt-3" onPress={confirmArchive} /> : null}
     </ScrollView>

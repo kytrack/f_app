@@ -93,16 +93,16 @@ function HabitAdminRow({ habit, first, last }: { habit: Habit; first: boolean; l
       </View>
       <View className="mt-2 flex-row gap-2">
         {habit.archivedAt ? (
-          <Pressable onPress={() => restore.mutate(habit.id, { onError })} accessibilityRole="button" className="rounded-lg bg-accent-soft px-3 py-1.5 dark:bg-line-dark">
+          <Pressable onPress={() => restore.mutate(habit.id, { onError })} accessibilityRole="button" className="rounded-lg bg-accent-soft px-3 py-1.5 dark:bg-accent-soft-dark">
             <Text className="text-xs font-semibold text-accent dark:text-accent-dark">Visszaállítás</Text>
           </Pressable>
         ) : (
-          <Pressable onPress={() => archive.mutate(habit.id, { onError })} accessibilityRole="button" className="rounded-lg bg-accent-soft px-3 py-1.5 dark:bg-line-dark">
+          <Pressable onPress={() => archive.mutate(habit.id, { onError })} accessibilityRole="button" className="rounded-lg bg-accent-soft px-3 py-1.5 dark:bg-accent-soft-dark">
             <Text className="text-xs font-semibold text-accent dark:text-accent-dark">Archiválás</Text>
           </Pressable>
         )}
-        <Pressable onPress={confirmDelete} accessibilityRole="button" className="rounded-lg bg-danger/10 px-3 py-1.5">
-          <Text className="text-xs font-semibold text-danger">Törlés</Text>
+        <Pressable onPress={confirmDelete} accessibilityRole="button" className="rounded-lg bg-danger/10 dark:bg-danger-dark/15 px-3 py-1.5">
+          <Text className="text-xs font-semibold text-danger dark:text-danger-dark">Törlés</Text>
         </Pressable>
       </View>
     </View>

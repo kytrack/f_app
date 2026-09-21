@@ -49,7 +49,7 @@ function Row({ entry }: { entry: LedgerEntry }) {
           {entry.multiplier !== 1 ? ` · ×${entry.multiplier}` : ''}
         </Text>
       </View>
-      <Text className={`text-base font-bold ${positive ? 'text-success' : 'text-danger'}`}>
+      <Text className={`text-base font-bold ${positive ? 'text-success dark:text-success-dark' : 'text-danger dark:text-danger-dark'}`}>
         {positive ? '+' : ''}
         {entry.delta}
       </Text>

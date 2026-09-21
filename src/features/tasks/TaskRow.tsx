@@ -45,7 +45,7 @@ export function TaskRow({ task, overdue = false }: { task: Task; overdue?: boole
           </Text>
           <View className="flex-row gap-3">
             {task.dueAt ? (
-              <Text className={`text-xs ${overdue ? 'font-semibold text-danger' : 'text-ink-muted dark:text-ink-dark-muted'}`}>
+              <Text className={`text-xs ${overdue ? 'font-semibold text-danger dark:text-danger-dark' : 'text-ink-muted dark:text-ink-dark-muted'}`}>
                 {format(new Date(task.dueAt), overdue ? 'MMM d. HH:mm' : 'HH:mm', { locale: hu })}
               </Text>
             ) : null}

@@ -138,7 +138,7 @@ export default function OnboardingScreen() {
                   setRewardIcon(r.icon);
                   setRewardCost(String(r.cost));
                 }}
-                className={`rounded-full px-3 py-1.5 ${rewardName === r.name ? 'bg-accent dark:bg-accent-dark' : 'bg-accent-soft dark:bg-line-dark'}`}>
+                className={`rounded-full px-3 py-1.5 ${rewardName === r.name ? 'bg-accent dark:bg-accent-dark' : 'bg-accent-soft dark:bg-accent-soft-dark'}`}>
                 <Text className={`text-xs font-medium ${rewardName === r.name ? 'text-white dark:text-canvas-dark' : 'text-accent dark:text-accent-dark'}`}>
                   {r.icon} {r.name} · {r.cost}
                 </Text>

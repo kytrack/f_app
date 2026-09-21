@@ -49,7 +49,7 @@ export default function SessionScreen() {
           <Text className="text-3xl font-extrabold text-ink dark:text-ink-dark">
             {doneSets}/{totalSets}
           </Text>
-          <Text className={`text-base font-bold ${finished ? 'text-success' : 'text-ink-muted dark:text-ink-dark-muted'}`}>
+          <Text className={`text-base font-bold ${finished ? 'text-success dark:text-success-dark' : 'text-ink-muted dark:text-ink-dark-muted'}`}>
             {finished ? `kész · +${projected}` : `${pct}% · ${projected} pont`}
           </Text>
         </View>
@@ -110,7 +110,7 @@ function ExerciseCard({
           <Pressable
             accessibilityRole="button"
             onPress={() => allDone.mutate({ sessionId, exerciseId: ex.exercise.id, done: !all }, { onError: (e) => notifyError(e) })}
-            className="rounded-lg bg-accent-soft px-3 py-2 active:opacity-70 dark:bg-line-dark">
+            className="rounded-lg bg-accent-soft px-3 py-2 active:opacity-70 dark:bg-accent-soft-dark">
             <Text className="text-xs font-semibold text-accent dark:text-accent-dark">{all ? 'mind ✗' : 'mind ✓'}</Text>
           </Pressable>
         ) : null}

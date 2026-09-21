@@ -52,7 +52,10 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: p.accent,
-        tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.line },
+        tabBarInactiveTintColor: p.muted,
+        tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.line, height: 64, paddingTop: 6, paddingBottom: 8 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        sceneStyle: { backgroundColor: p.canvas },
         headerStyle: { backgroundColor: p.canvas },
         headerShadowVisible: false,
         headerTitleStyle: { fontWeight: '700', color: p.text },

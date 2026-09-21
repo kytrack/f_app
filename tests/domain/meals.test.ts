@@ -126,6 +126,8 @@ describe('meals', () => {
 
   it('settings validation', () => {
     expect(() => updateSettings(w.ctx, { kcalTarget: 100 })).toThrow(/kcalTarget/);
-    expect(updateSettings(w.ctx, { kcalTarget: 2200, proteinG: 150 })).toMatchObject({ kcalTarget: 2200, proteinG: 150 });
+    expect(updateSettings(w.ctx, { kcalTarget: 2200, proteinG: 150 })).toMatchObject({ kcalTarget: 2200, proteinG: 150, theme: 'system' });
+    expect(updateSettings(w.ctx, { theme: 'dark' }).theme).toBe('dark');
+    expect(() => updateSettings(w.ctx, { theme: 'neon' as never })).toThrow(/theme/);
   });
 });

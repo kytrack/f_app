@@ -24,6 +24,7 @@ export default function AdminScreen() {
       <Card className="py-1">
         <NavRow href="/admin/rules" title="Pontszabályok" body="Minden pontérték, levonás, sorozat-szorzó, mérföldkő és fagyasztás." />
         <NavRow href="/admin/notifications" title="Értesítések" body="Lökések, kérdések, kapcsolók, csendes órák, összegző ideje." />
+        <NavRow href="/admin/appearance" title="Megjelenés" body="Téma: a rendszerét követi, világos vagy sötét." />
         <NavRow href="/admin/modules" title="Modulok" body="Mely fülek látszanak: naptár, edzés, kaja, jutalmak." />
         <NavRow href="/settings" title="Profil, nap, kalóriacél" body="Név, időzóna, napkezdet, szerkesztési ablak, kcal és makrók." />
       </Card>

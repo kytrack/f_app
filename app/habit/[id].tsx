@@ -172,7 +172,7 @@ export default function HabitFormScreen() {
                   );
                 })}
               </View>
-              {errors.weekdayMask ? <Text className="mt-1 text-xs text-danger">{errors.weekdayMask}</Text> : null}
+              {errors.weekdayMask ? <Text className="mt-1 text-xs text-danger dark:text-danger-dark">{errors.weekdayMask}</Text> : null}
             </View>
           ) : null}
           {form.scheduleType === 'times_per_week' ? (

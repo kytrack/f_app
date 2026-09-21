@@ -16,6 +16,7 @@ import migrations from '@/src/db/migrations/migrations';
 import { ensureSeed } from '@/src/db/seed';
 import { useNotifications } from '@/src/notifications/useNotifications';
 import { CelebrationOverlay } from '@/src/ui/Celebration';
+import { ThemeSync } from '@/src/ui/ThemeSync';
 import { palette } from '@/src/ui/tokens';
 
 export {
@@ -101,7 +102,15 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={theme}>
-      <Stack screenOptions={{ headerTitleStyle: { fontWeight: '700' } }}>
+      <ThemeSync />
+      <Stack
+        screenOptions={{
+          headerTitleStyle: { fontWeight: '700', color: p.text },
+          headerStyle: { backgroundColor: p.canvas },
+          headerTintColor: p.accent,
+          headerShadowVisible: false,
+          contentStyle: { backgroundColor: p.canvas },
+        }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="habit/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
@@ -131,6 +140,7 @@ function RootLayoutNav() {
         <Stack.Screen name="admin/meals" />
         <Stack.Screen name="admin/points" />
         <Stack.Screen name="admin/danger" />
+        <Stack.Screen name="admin/appearance" />
       </Stack>
       <CelebrationOverlay />
     </ThemeProvider>

@@ -11,7 +11,9 @@ export function usePalette() {
 
 export function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <View className={`rounded-2xl bg-surface p-4 dark:bg-surface-dark ${className}`}>{children}</View>
+    <View className={`rounded-2xl border border-line/70 bg-surface p-4 dark:border-line-dark dark:bg-surface-dark ${className}`}>
+      {children}
+    </View>
   );
 }
 
@@ -24,7 +26,7 @@ export function SectionTitle({
 }) {
   return (
     <View className="mb-2 mt-6 flex-row items-center justify-between px-1">
-      <Text className="text-xs font-semibold uppercase tracking-wider text-ink-muted dark:text-ink-dark-muted">
+      <Text className="text-[12px] font-bold uppercase tracking-widest text-ink-muted dark:text-ink-dark-muted">
         {children}
       </Text>
       {right}
@@ -43,21 +45,21 @@ export function Button({
 }: PressableProps & { title: string; variant?: ButtonVariant; className?: string }) {
   const bg: Record<ButtonVariant, string> = {
     primary: 'bg-accent dark:bg-accent-dark',
-    secondary: 'bg-accent-soft dark:bg-line-dark',
-    danger: 'bg-danger/10',
+    secondary: 'bg-accent-soft dark:bg-accent-soft-dark',
+    danger: 'bg-danger/10 dark:bg-danger-dark/15',
     ghost: 'bg-transparent',
   };
   const fg: Record<ButtonVariant, string> = {
     primary: 'text-white dark:text-canvas-dark',
     secondary: 'text-accent dark:text-accent-dark',
-    danger: 'text-danger',
+    danger: 'text-danger dark:text-danger-dark',
     ghost: 'text-accent dark:text-accent-dark',
   };
   return (
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
-      className={`items-center justify-center rounded-xl px-4 py-3 active:opacity-80 ${bg[variant]} ${
+      className={`min-h-[48px] items-center justify-center rounded-2xl px-4 py-3 active:opacity-80 ${bg[variant]} ${
         disabled ? 'opacity-40' : ''
       } ${className}`}
       {...rest}>
@@ -75,7 +77,7 @@ export function IconButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      className={`h-9 w-9 items-center justify-center rounded-full bg-accent-soft active:opacity-70 dark:bg-line-dark ${className}`}
+      className={`h-9 w-9 items-center justify-center rounded-full bg-accent-soft active:opacity-70 dark:bg-accent-soft-dark ${className}`}
       {...rest}>
       <Text className="text-lg font-bold text-accent dark:text-accent-dark">{label}</Text>
     </Pressable>
@@ -94,13 +96,13 @@ export function Field({
       <Text className="mb-1 text-sm font-medium text-ink dark:text-ink-dark">{label}</Text>
       <TextInput
         placeholderTextColor={p.muted}
-        className={`rounded-xl border bg-surface px-3 py-3 text-base text-ink dark:bg-surface-dark dark:text-ink-dark ${
-          error ? 'border-danger' : 'border-line dark:border-line-dark'
+        className={`rounded-xl border bg-surface-raised px-3 py-3 text-base text-ink dark:bg-surface-raised-dark dark:text-ink-dark ${
+          error ? 'border-danger dark:border-danger-dark' : 'border-line dark:border-line-dark'
         }`}
         {...input}
       />
       {error ? (
-        <Text className="mt-1 text-xs text-danger">{error}</Text>
+        <Text className="mt-1 text-xs text-danger dark:text-danger-dark">{error}</Text>
       ) : hint ? (
         <Text className="mt-1 text-xs text-ink-muted dark:text-ink-dark-muted">{hint}</Text>
       ) : null}
@@ -122,7 +124,7 @@ export function Segmented<T extends string>({
   return (
     <View className="mb-4">
       {label ? <Text className="mb-1 text-sm font-medium text-ink dark:text-ink-dark">{label}</Text> : null}
-      <View className="flex-row rounded-xl bg-accent-soft p-1 dark:bg-line-dark">
+      <View className="flex-row rounded-xl bg-line/60 p-1 dark:bg-surface-raised-dark">
         {options.map((o) => {
           const active = o.value === value;
           return (
@@ -132,7 +134,7 @@ export function Segmented<T extends string>({
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
               className={`flex-1 items-center rounded-lg py-2 ${
-                active ? 'bg-surface dark:bg-surface-dark' : ''
+                active ? 'bg-surface dark:bg-accent-soft-dark' : ''
               }`}>
               <Text
                 className={`text-sm font-medium ${
