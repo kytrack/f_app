@@ -1,8 +1,8 @@
 /**
  * Keeps the OS notification queue equal to `planNotifications()` from the database.
- * Native only – expo-notifications cannot schedule on web.
+ * Native builds only – see ./module.ts for where notifications are unavailable.
  */
-import * as Notifications from 'expo-notifications';
+import type { NotificationChannelInput } from 'expo-notifications';
 import { Platform } from 'react-native';
 import type { DomainCtx } from '@/src/domain/context';
 import {
@@ -13,14 +13,16 @@ import {
   type PlannedNotification,
 } from '@/src/domain/notifications';
 import { colors } from '@/src/ui/tokens';
+import { getNotifications } from './module';
 
-export const isNativeNotifications = Platform.OS !== 'web';
+export const isNativeNotifications = getNotifications() !== null;
 
 let configured = false;
 
 /** Foreground presentation + Android channels. Idempotent. */
 export async function configureNotifications(): Promise<void> {
-  if (!isNativeNotifications || configured) return;
+  const Notifications = getNotifications();
+  if (!Notifications || configured) return;
   configured = true;
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -31,7 +33,7 @@ export async function configureNotifications(): Promise<void> {
     }),
   });
   if (Platform.OS === 'android') {
-    const channels: Record<NotificationChannel, Notifications.NotificationChannelInput> = {
+    const channels: Record<NotificationChannel, NotificationChannelInput> = {
       reminders: {
         name: 'Emlékeztetők',
         description: 'Szokások, teendők és események emlékeztetői',
@@ -59,14 +61,16 @@ export async function configureNotifications(): Promise<void> {
 }
 
 export async function notificationsAllowed(): Promise<boolean> {
-  if (!isNativeNotifications) return false;
+  const Notifications = getNotifications();
+  if (!Notifications) return false;
   const { status } = await Notifications.getPermissionsAsync();
   return status === 'granted';
 }
 
 /** Asks once; returns whether we may schedule. */
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (!isNativeNotifications) return false;
+  const Notifications = getNotifications();
+  if (!Notifications) return false;
   const current = await Notifications.getPermissionsAsync();
   if (current.status === 'granted') return true;
   if (!current.canAskAgain) return false;
@@ -80,7 +84,7 @@ interface Scheduled {
   fireAt: string;
 }
 
-async function currentlyScheduled(): Promise<Scheduled[]> {
+async function currentlyScheduled(Notifications: NonNullable<ReturnType<typeof getNotifications>>): Promise<Scheduled[]> {
   const all = await Notifications.getAllScheduledNotificationsAsync();
   const out: Scheduled[] = [];
   for (const n of all) {
@@ -95,7 +99,7 @@ async function currentlyScheduled(): Promise<Scheduled[]> {
   return out;
 }
 
-async function schedule(n: PlannedNotification): Promise<void> {
+async function schedule(Notifications: NonNullable<ReturnType<typeof getNotifications>>, n: PlannedNotification): Promise<void> {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: n.title,
@@ -119,7 +123,8 @@ let queued = false;
  * Serialised: concurrent calls coalesce into one follow-up run.
  */
 export function reconcileNotifications(ctx: DomainCtx): Promise<void> {
-  if (!isNativeNotifications) return Promise.resolve();
+  const Notifications = getNotifications();
+  if (!Notifications) return Promise.resolve();
   if (inFlight) {
     queued = true;
     return inFlight;
@@ -130,14 +135,14 @@ export function reconcileNotifications(ctx: DomainCtx): Promise<void> {
       await configureNotifications();
       const plan = planNotifications(ctx, { max: Platform.OS === 'ios' ? MAX_SCHEDULED_IOS : MAX_SCHEDULED_ANDROID });
       const wanted = new Map(plan.map((n) => [n.key, n]));
-      const existing = await currentlyScheduled();
+      const existing = await currentlyScheduled(Notifications);
       const keep = new Set<string>();
       for (const s of existing) {
         const w = wanted.get(s.key);
         if (w && w.fireAt === s.fireAt) keep.add(s.key);
         else await Notifications.cancelScheduledNotificationAsync(s.identifier);
       }
-      for (const n of plan) if (!keep.has(n.key)) await schedule(n);
+      for (const n of plan) if (!keep.has(n.key)) await schedule(Notifications, n);
     } catch (e) {
       console.warn('notification reconcile failed', e);
     } finally {
@@ -153,7 +158,8 @@ export function reconcileNotifications(ctx: DomainCtx): Promise<void> {
 
 /** Sends a test notification in ~3 seconds (settings/debug helper). */
 export async function sendTestNotification(): Promise<void> {
-  if (!isNativeNotifications) return;
+  const Notifications = getNotifications();
+  if (!Notifications) return;
   await configureNotifications();
   await Notifications.scheduleNotificationAsync({
     content: {

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useAdminActions, useProfile } from '@/src/features/admin/useAdmin';
 import { useSettings, useSettingsActions } from '@/src/features/settings/useSettings';
+import { notificationsBlockedByExpoGo } from '@/src/notifications/module';
 import { isNativeNotifications, sendTestNotification } from '@/src/notifications/scheduler';
 import { notify, notifyError } from '@/src/ui/notify';
 import { Button, Field, SectionTitle } from '@/src/ui/primitives';
@@ -101,6 +102,15 @@ export default function SettingsScreen() {
         <Button title="Mentés, export és visszaállítás" variant="secondary" />
       </Link>
 
+      {notificationsBlockedByExpoGo ? (
+        <>
+          <SectionTitle>Értesítések</SectionTitle>
+          <Text className="text-sm text-ink-muted dark:text-ink-dark-muted">
+            Az Expo Go Androidon nem engedi az értesítéseket. Minden más működik; az emlékeztetők a telepített appban
+            (docs/PHONE.md, B út) élnek.
+          </Text>
+        </>
+      ) : null}
       {isNativeNotifications ? (
         <>
           <SectionTitle>Értesítések</SectionTitle>

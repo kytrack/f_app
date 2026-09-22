@@ -13,7 +13,7 @@ Feltétel: a gép és a telefon **ugyanazon a wifin** van, a gépen fut a fejles
 Minden mentett kódváltozás 1–2 másodperc alatt megjelenik a telefonon, újratelepítés nélkül.
 Ha nem találja a gépet (céges/vendég wifi, tűzfal): `npx expo start --tunnel`.
 
-Korlátok: csak addig fut, amíg a gépen megy az `npm start`; az adatok az Expo Go-n belül élnek; a helyi értesítések működnek.
+Korlátok: csak addig fut, amíg a gépen megy az `npm start`; az adatok az Expo Go-n belül élnek; **Androidon az Expo Go nem engedi az értesítéseket** (SDK 53 óta), ezért ott az app értesítések nélkül fut. Az emlékeztetőket a B út telepített appjában lehet kipróbálni.
 
 ## B) Saját telepített app (APK) + gyors frissítés (EAS)
 

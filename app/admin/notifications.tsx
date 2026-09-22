@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useDomain } from '@/src/db/domain';
 import { planNotifications, spreadOverActiveWindow } from '@/src/domain/notifications';
+import { notificationsBlockedByExpoGo } from '@/src/notifications/module';
 import { useSettings, useSettingsActions } from '@/src/features/settings/useSettings';
 import { notifyError } from '@/src/ui/notify';
 import { Button, Card, Field, SectionTitle, Segmented } from '@/src/ui/primitives';
@@ -90,6 +91,9 @@ export default function NotificationSettingsScreen() {
       <Stack.Screen options={{ title: 'Értesítések' }} />
       <Card>
         <Text className="text-sm text-ink-muted dark:text-ink-dark-muted">
+          {notificationsBlockedByExpoGo
+            ? 'Expo Go-ban Androidon az értesítések nem mennek ki, de a beállítások mentődnek és a telepített appban érvényesek. '
+            : ''}
           A mostani beállításokkal ma kb. {perDay} értesítés jön. Minden mentés és app-megnyitás után újratervezem a következő 7
           napot.
         </Text>

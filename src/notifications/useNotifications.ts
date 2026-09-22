@@ -1,12 +1,13 @@
-import * as Notifications from 'expo-notifications';
+import type { NotificationResponse } from 'expo-notifications';
 import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { useDomain } from '@/src/db/domain';
 import { onDomainChange } from '@/src/features/queries';
-import { isNativeNotifications, reconcileNotifications, requestNotificationPermission } from './scheduler';
+import { getNotifications } from './module';
+import { reconcileNotifications, requestNotificationPermission } from './scheduler';
 
-function openFromNotification(response: Notifications.NotificationResponse | null | undefined): void {
+function openFromNotification(response: NotificationResponse | null | undefined): void {
   const url = response?.notification.request.content.data?.url;
   if (typeof url === 'string' && url.startsWith('/')) router.push(url as never);
 }
@@ -14,13 +15,15 @@ function openFromNotification(response: Notifications.NotificationResponse | nul
 /**
  * Root hook: asks for permission once, re-plans the OS queue after every domain change
  * (debounced) and on app foreground, and routes notification taps to their screen.
+ * A no-op where notifications are unavailable (web, Expo Go on Android).
  */
 export function useNotifications() {
   const ctx = useDomain();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!isNativeNotifications) return;
+    const Notifications = getNotifications();
+    if (!Notifications) return;
     const plan = () => {
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => void reconcileNotifications(ctx), 1500);
