@@ -47,6 +47,19 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c7a649e9-ca93-48dc-9d8e-f78bb6fcb765"
+      }
+    },
+    "owner": "kytrack",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c7a649e9-ca93-48dc-9d8e-f78bb6fcb765"
     }
   }
 }
