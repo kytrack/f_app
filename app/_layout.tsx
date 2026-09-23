@@ -114,7 +114,8 @@ function RootLayoutNav() {
           // Non-tab screens have no tab bar under them: pad past the system navigation bar.
           contentStyle: { backgroundColor: p.canvas, paddingBottom: insets.bottom },
         }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* The tab bar handles the bottom inset itself; an extra padding here would leave a gap under it. */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, contentStyle: { backgroundColor: p.canvas, paddingBottom: 0 } }} />
         <Stack.Screen name="habit/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="task/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reward/[id]" options={{ presentation: 'modal' }} />

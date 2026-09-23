@@ -6,7 +6,6 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { useSettings } from '@/src/features/settings/useSettings';
 import { palette } from '@/src/ui/tokens';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type TabIcon = ComponentProps<typeof SymbolView>['name'];
 
@@ -40,8 +39,6 @@ const TABS: { name: string; title: string; icon: TabIcon }[] = [
 
 export default function TabLayout() {
   const p = palette(useColorScheme() === 'dark' ? 'dark' : 'light');
-  // Android system navigation bar (back / home) sits under the app: keep the tab bar above it.
-  const insets = useSafeAreaInsets();
   const { data: settings } = useSettings();
   const enabled: Record<string, boolean> = {
     index: true,
@@ -56,13 +53,8 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: p.accent,
         tabBarInactiveTintColor: p.muted,
-        tabBarStyle: {
-          backgroundColor: p.surface,
-          borderTopColor: p.line,
-          height: 58 + insets.bottom,
-          paddingTop: 6,
-          paddingBottom: 8 + insets.bottom,
-        },
+        // No custom height: the tab bar sizes itself to 49 + the system navigation bar inset.
+        tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.line, paddingTop: 4 },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         sceneStyle: { backgroundColor: p.canvas },
         headerStyle: { backgroundColor: p.canvas },
