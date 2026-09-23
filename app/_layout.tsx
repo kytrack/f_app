@@ -15,6 +15,7 @@ import { DomainProvider } from '@/src/db/domain';
 import migrations from '@/src/db/migrations/migrations';
 import { ensureSeed } from '@/src/db/seed';
 import { useNotifications } from '@/src/notifications/useNotifications';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CelebrationOverlay } from '@/src/ui/Celebration';
 import { ThemeSync } from '@/src/ui/ThemeSync';
 import { palette } from '@/src/ui/tokens';
@@ -92,6 +93,7 @@ function Migrator({ children }: { children: ReactNode }) {
 
 function RootLayoutNav() {
   useNotifications();
+  const insets = useSafeAreaInsets();
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const p = palette(scheme);
   const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
@@ -109,7 +111,8 @@ function RootLayoutNav() {
           headerStyle: { backgroundColor: p.canvas },
           headerTintColor: p.accent,
           headerShadowVisible: false,
-          contentStyle: { backgroundColor: p.canvas },
+          // Non-tab screens have no tab bar under them: pad past the system navigation bar.
+          contentStyle: { backgroundColor: p.canvas, paddingBottom: insets.bottom },
         }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="habit/[id]" options={{ presentation: 'modal' }} />
@@ -127,7 +130,7 @@ function RootLayoutNav() {
         <Stack.Screen name="history" options={{ title: 'Pont-történet' }} />
         <Stack.Screen name="stats" />
         <Stack.Screen name="backup" />
-        <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false, contentStyle: { backgroundColor: p.canvas } }} />
         <Stack.Screen name="capture" options={{ presentation: 'modal' }} />
         <Stack.Screen name="admin/index" />
         <Stack.Screen name="admin/habits" />

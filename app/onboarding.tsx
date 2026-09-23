@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { onSettingsChange, ROOT_KEY, useDomainMutation } from '@/src/features/queries';
 import { notifyError } from '@/src/ui/notify';
 import { Button, Card, Field, Segmented } from '@/src/ui/primitives';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const STARTER_HABITS: (HabitInput & { key: string })[] = [
   { key: 'water', name: 'Víz', icon: '💧', kind: 'good', targetCount: 8, unit: 'pohár' },
@@ -31,6 +32,7 @@ const REWARD_PRESETS = [
 export default function OnboardingScreen() {
   const ctx = useDomain();
   const qc = useQueryClient();
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState(0);
   const [dayStart, setDayStart] = useState('4');
   const [picked, setPicked] = useState<Set<string>>(new Set(['water', 'read']));
@@ -64,7 +66,7 @@ export default function OnboardingScreen() {
     });
 
   return (
-    <ScrollView className="flex-1 bg-canvas dark:bg-canvas-dark" contentContainerClassName="p-5 pb-16" keyboardShouldPersistTaps="handled">
+    <ScrollView className="flex-1 bg-canvas dark:bg-canvas-dark" contentContainerClassName="p-5 pb-16" contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + 64 }} keyboardShouldPersistTaps="handled">
       <Stack.Screen options={{ headerShown: false }} />
       <View className="mb-6 mt-8">
         <Text className="text-3xl font-extrabold text-ink dark:text-ink-dark">
