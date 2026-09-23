@@ -21,6 +21,7 @@ import {
   settings,
   tasks,
   users,
+  challenges,
   workoutPlanExercises,
   workoutPlans,
   workoutSessions,
@@ -34,6 +35,7 @@ import {
   type WorkoutPlan,
 } from '@/src/db/schema';
 import { DomainError, nowIso, todayKey, type DomainCtx } from './context';
+import { listChallenges } from './challenges';
 import { DEFAULT_RULES, invalidRuleKeys, parseRules, serializeRules, type PointRules } from './points/config';
 
 // ---------------------------------------------------------------- point rules
@@ -310,6 +312,7 @@ export interface AdminCounts {
   plans: number;
   exercises: number;
   mealTemplates: number;
+  challenges: number;
   ledgerEntries: number;
 }
 
@@ -327,6 +330,7 @@ export function adminCounts(ctx: DomainCtx): AdminCounts {
     plans: listAllPlans(ctx).filter((p) => !p.archivedAt).length,
     exercises: count(exercisesWithUsage(ctx)),
     mealTemplates: listAllMealTemplates(ctx).filter((t) => !t.archivedAt).length,
+    challenges: listChallenges(ctx).length,
     ledgerEntries: count(ctx.db.select({ id: pointLedger.id }).from(pointLedger).where(eq(pointLedger.userId, ctx.userId)).all()),
   };
 }
@@ -369,5 +373,6 @@ export function wipeData(ctx: DomainCtx, scope: WipeScope): void {
     tx.delete(mealLogs).run();
     tx.delete(mealPlanItems).run();
     tx.delete(mealTemplates).run();
+    tx.delete(challenges).run();
   });
 }

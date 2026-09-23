@@ -46,12 +46,13 @@ export function TaskRow({ task, overdue = false }: { task: Task; overdue?: boole
           <View className="flex-row gap-3">
             {task.dueAt ? (
               <Text className={`text-xs ${overdue ? 'font-semibold text-danger dark:text-danger-dark' : 'text-ink-muted dark:text-ink-dark-muted'}`}>
-                {format(new Date(task.dueAt), overdue ? 'MMM d. HH:mm' : 'HH:mm', { locale: hu })}
+                {task.challengeId && !overdue ? 'mára' : format(new Date(task.dueAt), overdue ? 'MMM d. HH:mm' : 'HH:mm', { locale: hu })}
               </Text>
             ) : null}
             <Text className="text-xs text-ink-muted dark:text-ink-dark-muted">
               {PRIORITY_LABEL[task.priority]}
               {task.parentTaskId ? ' · ↻' : ''}
+              {task.challengeId ? ' · 🎲 kihívás' : ''}
             </Text>
           </View>
         </Pressable>

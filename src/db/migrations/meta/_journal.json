@@ -57,6 +57,13 @@
       "when": 1790029939104,
       "tag": "0007_purple_onslaught",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1790155229057,
+      "tag": "0008_low_meteorite",
+      "breakpoints": true
     }
   ]
 }

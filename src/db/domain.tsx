@@ -24,6 +24,8 @@ export function buildDomainCtx(): DomainCtx {
       editGraceHours: row.editGraceHours,
       kcalTolerancePct: row.kcalTolerancePct,
       kcalTarget: row.kcalTarget,
+      challengesEnabled: row.challengesEnabled,
+      challengeChoices: row.challengeChoices,
       rules: parseRules(row.pointRules),
       notifHabits: row.notifHabits,
       notifTasks: row.notifTasks,
@@ -40,6 +42,7 @@ export function buildDomainCtx(): DomainCtx {
     },
     now: () => new Date(),
     uuid: () => Crypto.randomUUID(),
+    random: Math.random,
   };
 }
 

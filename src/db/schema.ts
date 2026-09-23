@@ -57,6 +57,10 @@ export const settings = sqliteTable('settings', {
   summaryTime: text('summary_time').notNull().default('20:00'),
   captureOnOpenHours: integer('capture_on_open_hours').notNull().default(4), // ask in-app at most every N hours (0 = never)
   lastCapturePromptAt: text('last_capture_prompt_at'),
+  // --- random challenges ("dobás")
+  challengesEnabled: integer('challenges_enabled', { mode: 'boolean' }).notNull().default(true),
+  challengeChoices: integer('challenge_choices').notNull().default(3), // how many options a draw offers
+  lastChallengeDay: text('last_challenge_day'), // logical day of the last mandatory draw
   // --- admin
   pointRules: text('point_rules'), // JSON diff over DEFAULT_RULES (src/domain/points/config.ts)
   modCalendar: integer('mod_calendar', { mode: 'boolean' }).notNull().default(true),
@@ -138,6 +142,7 @@ export const tasks = sqliteTable(
     points: integer('points'), // NULL → derived from priority
     recurrence: text('recurrence'), // JSON, Phase 2
     parentTaskId: text('parent_task_id').references((): AnySQLiteColumn => tasks.id),
+    challengeId: text('challenge_id'), // set when the task came from a challenge draw
     completedAt: text('completed_at'),
     overduePenalizedAt: text('overdue_penalized_at'),
     deletedAt: text('deleted_at'),
@@ -146,6 +151,25 @@ export const tasks = sqliteTable(
   },
   (t) => [index('idx_tasks_due').on(t.dueAt)],
 );
+
+// ---------------------------------------------------------------- challenges
+
+/** The pool the daily "dobás" draws from: chores and small missions the user defined. */
+export const challenges = sqliteTable('challenges', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
+  name: text('name').notNull(),
+  icon: text('icon'),
+  points: integer('points').notNull().default(15),
+  /** Relative draw weight (1 = normal, 2 = twice as likely). */
+  weight: integer('weight').notNull().default(1),
+  archivedAt: text('archived_at'),
+  deletedAt: text('deleted_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
 
 // ---------------------------------------------------------------- calendar
 
@@ -437,6 +461,8 @@ export type NewHabit = typeof habits.$inferInsert;
 export type HabitLog = typeof habitLogs.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
+export type Challenge = typeof challenges.$inferSelect;
+export type NewChallenge = typeof challenges.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type EventReminder = typeof eventReminders.$inferSelect;

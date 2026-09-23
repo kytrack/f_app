@@ -17,6 +17,7 @@ export default function AdminScreen() {
         <NavRow href="/admin/events" title="Események" badge={c?.events} body="Minden naptárbejegyzés, ismétlődés, emlékeztetők." />
         <NavRow href="/admin/rewards" title="Jutalmak" badge={c?.rewards} body="Árak, archivált jutalmak, beváltások és teljesítésük." />
         <NavRow href="/admin/workouts" title="Edzés" badge={c ? `${c.plans} terv · ${c.exercises} gyak.` : undefined} body="Edzéstervek, gyakorlatok átnevezése és törlése." />
+        <NavRow href="/admin/challenges" title="Kihívások" badge={c?.challenges} body="A napi dobás listája: házimunkák, kis küldetések, pontjaik." />
         <NavRow href="/admin/meals" title="Kaja" badge={c?.mealTemplates} body="Ételsablonok, heti étrend, kalóriacél." />
       </Card>
 

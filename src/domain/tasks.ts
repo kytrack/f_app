@@ -12,7 +12,7 @@ import { taskPoints, type TaskPriority } from './points/rules';
 import { assertEditable } from './habits';
 
 export type TaskInput = Pick<NewTask, 'title'> &
-  Partial<Pick<NewTask, 'notes' | 'dueAt' | 'priority' | 'points'>> & { recurrence?: Recurrence | null };
+  Partial<Pick<NewTask, 'notes' | 'dueAt' | 'priority' | 'points' | 'challengeId'>> & { recurrence?: Recurrence | null };
 
 /** How far ahead recurring templates are turned into concrete task instances. */
 export const MATERIALIZE_DAYS = 7;

@@ -26,6 +26,9 @@ export type SettingsPatch = Partial<
     | 'summaryTime'
     | 'captureOnOpenHours'
     | 'lastCapturePromptAt'
+    | 'challengesEnabled'
+    | 'challengeChoices'
+    | 'lastChallengeDay'
     | 'modCalendar'
     | 'modWorkout'
     | 'modMeals'
@@ -55,6 +58,7 @@ export function updateSettings(ctx: DomainCtx, patch: SettingsPatch): Settings {
     if (v !== undefined && v !== null && (v < 0 || v > 2000)) throw bad(k);
   }
   if (patch.theme !== undefined && !['system', 'light', 'dark'].includes(patch.theme)) throw bad('theme');
+  if (patch.challengeChoices !== undefined && (patch.challengeChoices < 1 || patch.challengeChoices > 6)) throw bad('challengeChoices');
   if (patch.nudgesPerDay !== undefined && (patch.nudgesPerDay < 0 || patch.nudgesPerDay > 8)) throw bad('nudgesPerDay');
   if (patch.capturesPerDay !== undefined && (patch.capturesPerDay < 0 || patch.capturesPerDay > 6)) throw bad('capturesPerDay');
   if (patch.captureOnOpenHours !== undefined && (patch.captureOnOpenHours < 0 || patch.captureOnOpenHours > 48))

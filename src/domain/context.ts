@@ -48,6 +48,8 @@ export interface DomainSettings extends NotificationSettings {
   editGraceHours: number;
   kcalTolerancePct: number;
   kcalTarget: number | null;
+  challengesEnabled: boolean;
+  challengeChoices: number;
   /** User-editable point rules (defaults merged in). */
   rules: PointRules;
 }
@@ -58,6 +60,8 @@ export interface DomainCtx {
   settings: DomainSettings;
   now: () => Date;
   uuid: () => string;
+  /** Uniform [0, 1) – injected so draws are deterministic in tests. */
+  random: () => number;
 }
 
 export function todayKey(ctx: DomainCtx): DayKey {

@@ -9,6 +9,7 @@ import m0004 from './0004_curly_wendell_rand.sql';
 import m0005 from './0005_normal_bucky.sql';
 import m0006 from './0006_dapper_lily_hollister.sql';
 import m0007 from './0007_purple_onslaught.sql';
+import m0008 from './0008_low_meteorite.sql';
 
   export default {
     journal,
@@ -20,7 +21,8 @@ m0003,
 m0004,
 m0005,
 m0006,
-m0007
+m0007,
+m0008
     }
   }
   

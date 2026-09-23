@@ -28,6 +28,7 @@ export async function createTestWorld(startAt = '2026-09-09T10:00:00Z'): Promise
 
   let now = new Date(startAt);
   let counter = 0;
+  let seed = 42;
   const ctx: DomainCtx = {
     db,
     userId: 'user-1',
@@ -41,10 +42,17 @@ export async function createTestWorld(startAt = '2026-09-09T10:00:00Z'): Promise
       editGraceHours: 48,
       kcalTolerancePct: 10,
       kcalTarget: null,
+      challengesEnabled: true,
+      challengeChoices: 3,
       rules: { ...DEFAULT_RULES },
     },
     now: () => now,
     uuid: () => `id-${++counter}`,
+    random: () => {
+      // deterministic LCG so draws are reproducible
+      seed = (seed * 1664525 + 1013904223) % 4294967296;
+      return seed / 4294967296;
+    },
   };
 
   const iso = now.toISOString();

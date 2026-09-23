@@ -460,6 +460,14 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Pont kajánként:** minden kipipált TERVEZETT kaja `mealEaten` pontot ad (alap: 3) `meal_eaten` főkönyvi sorként (`ref_type = meal`, a napló id-jével); visszavonásnál sztornó, újrapipálásnál egyszer fizet. Terven kívüli tétel nem ad pontot, mert a terv betartását jutalmazzuk. 0-ra állítva kikapcsol.
 - **Tökéletes nap:** ha van kcal-cél ÉS aznap van kajanapló-sor, a bónuszhoz a kalóriacél találat is kell (`perfectDayNeedsKcal` = 1, kikapcsolható 0-val). Cél nélkül vagy kajanapló nélküli napon nem feltétel, hogy a modult nem használó napok ne ragadjanak be.
 
+### 4.3j Napi dobás – véletlen kihívások (2026-09-23, felhasználói kérés)
+
+- **Kihívás-lista** (`challenges` tábla, `/admin/challenges`): név, ikon, pont (alap: `challengePoints` szabály, 15), súly (1–10, a dobás gyakorisága). Archiválás/visszaállítás/törlés, kezdőlista egy gombbal.
+- **Kötelező napi dobás**: app-megnyitáskor és előtérbe kerüléskor, ha a logikai napon még nem volt (`settings.last_challenge_day`), és a lista nem üres, és be van kapcsolva. Súlyozott, ismétlés nélküli húzás `challenge_choices` (1–6, alap 3) lehetőségből; a már aznap elvállaltak kimaradnak. Egy újradobás engedélyezett, bezárni nem lehet, választani kell. A „van valami a fejedben?” kérdés ilyenkor átadja az elsőbbséget.
+- **Kézi dobás**: a Ma képernyő Teendők sorában 🎲 gomb, bármikor, bezárható, korlátlan újradobás.
+- **Elfogadás** → teendő a mai logikai nap végéig (`dayStartHour` − 1 perc másnap), a kihívás pontjával, `tasks.challenge_id`-vel jelölve („🎲 kihívás” címke). Ugyanaz a kihívás egy nap egyszer vállalható. A pontozás a teendőkével azonos (késés, lejárat).
+- Véletlen: `ctx.random()` a DomainCtx-ben, tesztben determinisztikus LCG.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:

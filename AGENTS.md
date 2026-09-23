@@ -35,6 +35,7 @@ Expo SDK 57 · Expo Router · TypeScript strict · NativeWind 4 (Tailwind 3) · 
 - Notification intensity (nudges, capture prompts, quiet hours, toggles) is data in `settings` and read through `ctx.settings`; the plan in `src/domain/notifications.ts` is the only consumer. `/capture` is the quick-capture sheet; `/admin/*` are the management screens.
 - Admin: `src/domain/admin.ts` (full listings incl. archived, restore, rules, profile, manual adjust, wipe) + `src/features/admin/useAdmin.ts` + `app/admin/*`. Every new entity needs a row in `/admin` and a management screen. Module tabs are hidden via `settings.mod*` in `app/(tabs)/_layout.tsx`.
 - Fixed daily meals are a VIEW over the weekly plan (`fixedMeals`/`addFixedMeal`/`setFixedMealDays` in `src/domain/meals.ts`), not a new table. Any code that removes plan items must go through `dropPendingLogs` so un-eaten rows from today on disappear too. `NutritionSummary` + `MealRow` are shared by the Kaja tab and the home card.
+- Challenges ("dobás"): `src/domain/challenges.ts`; a drawn challenge becomes a normal task with `challenge_id`, so all task scoring applies. Randomness must go through `ctx.random()` (deterministic in tests). The daily prompt hook runs before the capture prompt, which yields to it.
 - `Alert` is a no-op on web: use `notify()`/`confirm()` from `src/ui/notify.ts`, never `Alert.alert` directly.
 
 ## Layout

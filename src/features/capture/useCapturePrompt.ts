@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { useDomain } from '@/src/db/domain';
+import { shouldDrawToday } from '@/src/domain/challenges';
 import { shouldPromptCapture } from '@/src/domain/notifications';
 import { getSettings, updateSettings } from '@/src/domain/settings';
 import { ROOT_KEY } from '../queries';
@@ -23,6 +24,7 @@ export function useCapturePrompt() {
       try {
         const row = getSettings(ctx);
         if (!row.onboardedAt) return;
+        if (shouldDrawToday(ctx, row.lastChallengeDay)) return; // the daily draw goes first; capture asks next time
         if (!shouldPromptCapture(ctx, row.lastCapturePromptAt)) return;
         updateSettings(ctx, { lastCapturePromptAt: ctx.now().toISOString() });
         qc.invalidateQueries({ queryKey: [...ROOT_KEY, 'settings'] });

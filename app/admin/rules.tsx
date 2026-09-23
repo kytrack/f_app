@@ -29,6 +29,7 @@ const SECTIONS: { title: string; hint?: string; fields: { key: Key; label: strin
       { key: 'taskHigh', label: 'Fontos' },
       { key: 'taskLatePct', label: 'Késve teljesítve (%)' },
       { key: 'taskOverdue', label: 'Lejárt teendő levonása' },
+      { key: 'challengePoints', label: 'Új kihívás alappontja' },
     ],
   },
   {

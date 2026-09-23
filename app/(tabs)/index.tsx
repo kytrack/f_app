@@ -10,12 +10,14 @@ import { PointsHeader } from '@/src/features/today/PointsHeader';
 import { useToday } from '@/src/features/today/useToday';
 import { useSettings } from '@/src/features/settings/useSettings';
 import { useCapturePrompt } from '@/src/features/capture/useCapturePrompt';
+import { useChallengePrompt } from '@/src/features/challenges/useChallenges';
 import { Card, EmptyState, IconButton, SectionTitle } from '@/src/ui/primitives';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function TodayScreen() {
   useDayClose();
+  useChallengePrompt();
   useCapturePrompt();
   const { data, isLoading, refetch, isRefetching } = useToday();
   const { data: settings } = useSettings();
@@ -76,9 +78,14 @@ export default function TodayScreen() {
 
       <SectionTitle
         right={
-          <Link href={{ pathname: '/task/[id]', params: { id: 'new' } }} asChild>
-            <IconButton label="+" />
-          </Link>
+          <View className="flex-row gap-2">
+            <Link href={{ pathname: '/challenge', params: { mode: 'manual' } }} asChild>
+              <IconButton label="🎲" />
+            </Link>
+            <Link href={{ pathname: '/task/[id]', params: { id: 'new' } }} asChild>
+              <IconButton label="+" />
+            </Link>
+          </View>
         }>
         Teendők · {tasks.completed.length}/{open.length + tasks.completed.length}
       </SectionTitle>
