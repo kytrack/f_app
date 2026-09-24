@@ -44,6 +44,8 @@ export async function createTestWorld(startAt = '2026-09-09T10:00:00Z'): Promise
       kcalTarget: null,
       challengesEnabled: true,
       challengeChoices: 3,
+      focusAutoOpen: true,
+      focusCheckinMinutes: 20,
       rules: { ...DEFAULT_RULES },
     },
     now: () => now,

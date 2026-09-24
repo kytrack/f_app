@@ -38,6 +38,7 @@ export default function NotificationSettingsScreen() {
   const [summary, setSummary] = useState<YesNo>('yes');
   const [nudges, setNudges] = useState<YesNo>('yes');
   const [capture, setCapture] = useState<YesNo>('yes');
+  const [focus, setFocus] = useState<YesNo>('yes');
   const [nudgesPerDay, setNudgesPerDay] = useState('3');
   const [capturesPerDay, setCapturesPerDay] = useState('2');
   const [quietFrom, setQuietFrom] = useState('22:00');
@@ -53,6 +54,7 @@ export default function NotificationSettingsScreen() {
     setSummary(yn(data.notifSummary));
     setNudges(yn(data.notifNudges));
     setCapture(yn(data.notifCapture));
+    setFocus(yn(data.notifFocus));
     setNudgesPerDay(String(data.nudgesPerDay));
     setCapturesPerDay(String(data.capturesPerDay));
     setQuietFrom(data.quietFrom);
@@ -73,6 +75,7 @@ export default function NotificationSettingsScreen() {
         notifSummary: summary === 'yes',
         notifNudges: nudges === 'yes',
         notifCapture: capture === 'yes',
+        notifFocus: focus === 'yes',
         nudgesPerDay: Number(nudgesPerDay) || 0,
         capturesPerDay: Number(capturesPerDay) || 0,
         quietFrom,
@@ -125,6 +128,7 @@ export default function NotificationSettingsScreen() {
       <Toggle label="Teendők (1 órával a határidő előtt)" value={tasks} onChange={setTasks} />
       <Toggle label="Események (a beállított eltolással)" value={events} onChange={setEvents} />
       <Toggle label="Esti összegző" value={summary} onChange={setSummary} />
+      <Toggle label="Fókusz mód (indulás, visszakérdezés, lejárat)" value={focus} onChange={setFocus} hint="Fókusz alatt a lökések és a kérdések elmaradnak." />
       <Field label="Összegző ideje" value={summaryTime} onChangeText={setSummaryTime} placeholder="20:00" />
 
       <SectionTitle>Csendes órák</SectionTitle>

@@ -468,6 +468,13 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Elfogadás** → teendő a mai logikai nap végéig (`dayStartHour` − 1 perc másnap), a kihívás pontjával, `tasks.challenge_id`-vel jelölve („🎲 kihívás” címke). Ugyanaz a kihívás egy nap egyszer vállalható. A pontozás a teendőkével azonos (késés, lejárat).
 - Véletlen: `ctx.random()` a DomainCtx-ben, tesztben determinisztikus LCG.
 
+### 4.3k Fókusz mód + értesítés-koppintás javítás (2026-09-24, felhasználói kérés)
+
+- **Fókusz idő** (`focus_sessions` tábla, `src/domain/focus.ts`, `/focus/[id]`, `/focus/edit`, `/admin/focus`): cím, kezdés–vég (max 12 óra), visszakérdezés N percenként (0 = nincs; alap `settings.focus_checkin_minutes`, 20), jegyzet. Státusz az órából és a kimenetből: `planned → active → ended`, illetve `done` / `cancelled`.
+- **Terelés fókusz alatt**: (1) az értesítési terv `focus:{id}:start` / `:c{i}` / `:end` bejegyzéseket ad (indulás, „még rajta vagy?”, lejárat), `notif_focus` kapcsolóval; (2) a lökések és a „van valami a fejedben?” értesítések, amik a blokkba esnének, kimaradnak, és az app-megnyitáskori kérdés is hallgat; (3) `focus_auto_open` mellett megnyitáskor/előtérbe kerüléskor a fókusz képernyő nyílik; (4) a Ma képernyő kártyája a futó blokkot mutatja visszaszámlálóval és „rajta vagyok” gombbal.
+- **Pontok** csak `finishFocus`-ban, egy `focus_done` főkönyvi sorral (`ref_type=focus`): `round(eltelt perc / 60 × focusPointsPerHour)` + `checkinsDone × focusCheckinPoint` (alap 20/óra és 2). Az eltelt idő a tervezett hosszra van vágva (kései pipa nem fizet többet), a korai befejezés arányosan fizet. Visszajelzés csak futó blokk alatt, 5 percen belül egyszer számít. Lemondás: nincs pont, végleges. Befejezett blokk nem szerkeszthető és nem mondható le.
+- **Értesítés-koppintás**: a koppintást `request.identifier` szerint egyszer kezeljük (az app-indító koppintást az OS minden újrafeliratkozáskor visszaadta → a képernyő újra és újra megnyílt), és 15 másodpercre elnyomjuk az automatikus felugrókat (napi dobás, „van valami a fejedben?”), amik eddig a koppintás által nyitott képernyőre pakolták a saját lapjukat (ezért „akart új feljegyzést” egy határidő-értesítés). A felugrók `router.canDismiss()`-szel is ellenőrzik, hogy nincs-e már lap nyitva. Sorrend megnyitáskor: fókusz → napi dobás → kérdés.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:

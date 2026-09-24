@@ -9,6 +9,7 @@ import {
   eventReminders,
   events,
   exercises,
+  focusSessions,
   habitLogs,
   habits,
   mealLogs,
@@ -36,6 +37,7 @@ import {
 } from '@/src/db/schema';
 import { DomainError, nowIso, todayKey, type DomainCtx } from './context';
 import { listChallenges } from './challenges';
+import { openFocus } from './focus';
 import { DEFAULT_RULES, invalidRuleKeys, parseRules, serializeRules, type PointRules } from './points/config';
 
 // ---------------------------------------------------------------- point rules
@@ -313,6 +315,7 @@ export interface AdminCounts {
   exercises: number;
   mealTemplates: number;
   challenges: number;
+  focusOpen: number;
   ledgerEntries: number;
 }
 
@@ -331,6 +334,7 @@ export function adminCounts(ctx: DomainCtx): AdminCounts {
     exercises: count(exercisesWithUsage(ctx)),
     mealTemplates: listAllMealTemplates(ctx).filter((t) => !t.archivedAt).length,
     challenges: listChallenges(ctx).length,
+    focusOpen: openFocus(ctx).length,
     ledgerEntries: count(ctx.db.select({ id: pointLedger.id }).from(pointLedger).where(eq(pointLedger.userId, ctx.userId)).all()),
   };
 }
@@ -374,5 +378,6 @@ export function wipeData(ctx: DomainCtx, scope: WipeScope): void {
     tx.delete(mealPlanItems).run();
     tx.delete(mealTemplates).run();
     tx.delete(challenges).run();
+    tx.delete(focusSessions).run();
   });
 }

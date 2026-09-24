@@ -9,13 +9,16 @@
  *  - "nudges": N per day spread over the active window – how much is still open today
  *  - "capture" prompts: M per day – "anything on your mind? put it in the calendar"
  *  - evening summary at summaryTime
+ *  - focus sessions: a start ping, "still on it?" check-ins, an end ping
  * Nudges, captures and the summary respect the quiet hours; explicit times do not.
+ * Nudges and captures are also dropped while a focus session runs.
  */
 import { and, eq, isNull, isNotNull } from 'drizzle-orm';
 import { habits, tasks } from '@/src/db/schema';
 import { todayKey, type DomainCtx } from './context';
 import { addDaysToKey, calendarKeyFor, dayRange, instantFor, localTime, type DayKey } from './dates';
 import { eventsOn } from './events';
+import { elapsedMinutes, focusPoints, focusTimeRange, inFocusAt, openFocus, plannedMinutes } from './focus';
 import { habitsWithLogs } from './habits';
 import { taskDayKey, tasksForDay } from './tasks';
 
@@ -91,6 +94,11 @@ export function planNotifications(
     if (Date.parse(n.fireAt) > nowMs) out.push(n);
   };
   const quiet = (time: string) => inQuietHours(toMinutes(time), s.quietFrom, s.quietTo);
+  const focus = openFocus(ctx);
+  /** Nudges and capture prompts never interrupt a focus block. */
+  const pushUnlessFocused = (n: PlannedNotification) => {
+    if (!inFocusAt(focus, n.fireAt)) push(n);
+  };
 
   const anyHabits =
     ctx.db
@@ -141,7 +149,7 @@ export function planNotifications(
         } else {
           parts.push('Nézz rá a mai listádra.');
         }
-        push({
+        pushUnlessFocused({
           key: `nudge:${day}:${i}`,
           fireAt: instantFor(day, time, tz).toISOString(),
           title: 'Hol tartasz ma?',
@@ -154,7 +162,7 @@ export function planNotifications(
 
     if (s.notifCapture) {
       captureTimes.forEach((time, i) => {
-        push({
+        pushUnlessFocused({
           key: `capture:${day}:${i}`,
           fireAt: instantFor(day, time, tz).toISOString(),
           title: 'Van valami a fejedben?',
@@ -232,6 +240,49 @@ export function planNotifications(
     }
   }
 
+  // --- focus sessions: start, check-ins, end
+  if (s.notifFocus) {
+    const horizonMs = nowMs + days * 86_400_000;
+    for (const f of focus) {
+      const startMs = Date.parse(f.startAt);
+      const endMs = Date.parse(f.endAt);
+      if (startMs > horizonMs) continue;
+      const url = `/focus/${f.id}`;
+      const range = focusTimeRange(ctx, f);
+      push({
+        key: `focus:${f.id}:start`,
+        fireAt: f.startAt,
+        title: `🎯 Fókusz indul: ${f.title}`,
+        body: `${range} · Tedd félre a többit, ${plannedMinutes(f)} perc csak erre.`,
+        url,
+        channel: 'reminders',
+      });
+      if (f.checkinMinutes > 0) {
+        const step = f.checkinMinutes * 60_000;
+        for (let i = 1, t = startMs + step; t < endMs - 2 * 60_000; i++, t += step) {
+          const left = Math.round((endMs - t) / 60_000);
+          push({
+            key: `focus:${f.id}:c${i}`,
+            fireAt: new Date(t).toISOString(),
+            title: `Még rajta vagy? · ${f.title}`,
+            body: `Még ${left} perc. Koppints, és jelezd, hogy fókuszban vagy (+${s.rules.focusCheckinPoint}).`,
+            url,
+            channel: 'reminders',
+          });
+        }
+      }
+      const finalPoints = focusPoints(ctx, f, new Date(endMs));
+      push({
+        key: `focus:${f.id}:end`,
+        fireAt: f.endAt,
+        title: `Lejárt a fókusz idő: ${f.title}`,
+        body: `${elapsedMinutes(f, new Date(endMs))} perc megvolt. Pipáld ki, jár érte +${finalPoints} pont.`,
+        url,
+        channel: 'reminders',
+      });
+    }
+  }
+
   out.sort((a, b) => (a.fireAt < b.fireAt ? -1 : a.fireAt > b.fireAt ? 1 : a.key.localeCompare(b.key)));
   return out.slice(0, opts.max ?? MAX_SCHEDULED_IOS);
 }
@@ -242,6 +293,7 @@ export function shouldPromptCapture(ctx: DomainCtx, lastPromptAt: string | null)
   if (!s.notifCapture || s.captureOnOpenHours <= 0) return false;
   const now = ctx.now();
   if (inQuietHours(toMinutes(localTime(now, s.timezone)), s.quietFrom, s.quietTo)) return false;
+  if (inFocusAt(openFocus(ctx), now)) return false; // a running focus block is not the time to brainstorm
   if (!lastPromptAt) return true;
   return now.getTime() - Date.parse(lastPromptAt) >= s.captureOnOpenHours * 3_600_000;
 }

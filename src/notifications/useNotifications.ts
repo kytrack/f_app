@@ -1,16 +1,10 @@
-import type { NotificationResponse } from 'expo-notifications';
-import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { useDomain } from '@/src/db/domain';
 import { onDomainChange } from '@/src/features/queries';
 import { getNotifications } from './module';
 import { reconcileNotifications, requestNotificationPermission } from './scheduler';
-
-function openFromNotification(response: NotificationResponse | null | undefined): void {
-  const url = response?.notification.request.content.data?.url;
-  if (typeof url === 'string' && url.startsWith('/')) router.push(url as never);
-}
+import { openFromNotification } from './taps';
 
 /**
  * Root hook: asks for permission once, re-plans the OS queue after every domain change
@@ -21,6 +15,7 @@ export function useNotifications() {
   const ctx = useDomain();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Planning follows the ctx (settings live in it); tap routing is subscribed once.
   useEffect(() => {
     const Notifications = getNotifications();
     if (!Notifications) return;
@@ -32,14 +27,20 @@ export function useNotifications() {
     void requestNotificationPermission().then((ok) => ok && plan());
     onDomainChange.add(plan);
     const app = AppState.addEventListener('change', (s) => s === 'active' && plan());
-    const tap = Notifications.addNotificationResponseReceivedListener(openFromNotification);
-    void Notifications.getLastNotificationResponseAsync().then(openFromNotification);
 
     return () => {
       onDomainChange.delete(plan);
       app.remove();
-      tap.remove();
       if (timer.current) clearTimeout(timer.current);
     };
   }, [ctx]);
+
+  useEffect(() => {
+    const Notifications = getNotifications();
+    if (!Notifications) return;
+    const tap = Notifications.addNotificationResponseReceivedListener(openFromNotification);
+    // The tap that launched the app (cold start) is not delivered to the listener above.
+    void Notifications.getLastNotificationResponseAsync().then(openFromNotification);
+    return () => tap.remove();
+  }, []);
 }

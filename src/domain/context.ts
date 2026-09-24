@@ -19,6 +19,7 @@ export interface NotificationSettings {
   notifSummary: boolean;
   notifNudges: boolean;
   notifCapture: boolean;
+  notifFocus: boolean;
   nudgesPerDay: number;
   capturesPerDay: number;
   quietFrom: string; // 'HH:MM'
@@ -34,6 +35,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   notifSummary: true,
   notifNudges: true,
   notifCapture: true,
+  notifFocus: true,
   nudgesPerDay: 3,
   capturesPerDay: 2,
   quietFrom: '22:00',
@@ -50,6 +52,10 @@ export interface DomainSettings extends NotificationSettings {
   kcalTarget: number | null;
   challengesEnabled: boolean;
   challengeChoices: number;
+  /** Focus mode: open the focus screen on app open while a session runs. */
+  focusAutoOpen: boolean;
+  /** Focus mode: default "still on it?" interval for new sessions, minutes (0 = none). */
+  focusCheckinMinutes: number;
   /** User-editable point rules (defaults merged in). */
   rules: PointRules;
 }

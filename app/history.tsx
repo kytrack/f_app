@@ -20,6 +20,7 @@ const REASON_LABEL: Record<LedgerReason, string> = {
   reversal: 'Visszavonás',
   manual_adjust: 'Kézi módosítás',
   meal_eaten: 'Kaja megvolt',
+  focus_done: 'Fókusz megvolt',
 };
 
 export default function HistoryScreen() {

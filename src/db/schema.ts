@@ -61,6 +61,10 @@ export const settings = sqliteTable('settings', {
   challengesEnabled: integer('challenges_enabled', { mode: 'boolean' }).notNull().default(true),
   challengeChoices: integer('challenge_choices').notNull().default(3), // how many options a draw offers
   lastChallengeDay: text('last_challenge_day'), // logical day of the last mandatory draw
+  // --- focus mode (see src/domain/focus.ts)
+  notifFocus: integer('notif_focus', { mode: 'boolean' }).notNull().default(true), // start / check-in / end pings
+  focusAutoOpen: integer('focus_auto_open', { mode: 'boolean' }).notNull().default(true), // open the focus screen on app open while a session runs
+  focusCheckinMinutes: integer('focus_checkin_minutes').notNull().default(20), // default "still on it?" interval for new sessions (0 = none)
   // --- admin
   pointRules: text('point_rules'), // JSON diff over DEFAULT_RULES (src/domain/points/config.ts)
   modCalendar: integer('mod_calendar', { mode: 'boolean' }).notNull().default(true),
@@ -170,6 +174,37 @@ export const challenges = sqliteTable('challenges', {
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
+
+// ---------------------------------------------------------------- focus mode
+
+/**
+ * A planned block of deep work ("projekten dolgozom 14:00–16:00"). While it runs the app
+ * steers the user back to it: focus screen on open, check-in pings, no nudges. Finishing
+ * it earns points for the time spent; cancelling earns nothing.
+ */
+export const focusSessions = sqliteTable(
+  'focus_sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    title: text('title').notNull(),
+    note: text('note'),
+    startAt: text('start_at').notNull(), // ISO
+    endAt: text('end_at').notNull(), // ISO
+    checkinMinutes: integer('checkin_minutes').notNull().default(20), // "still on it?" every N minutes (0 = none)
+    checkinsDone: integer('checkins_done').notNull().default(0),
+    lastCheckinAt: text('last_checkin_at'),
+    completedAt: text('completed_at'),
+    cancelledAt: text('cancelled_at'),
+    pointsAwarded: integer('points_awarded').notNull().default(0),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deletedAt: text('deleted_at'),
+  },
+  (t) => [index('idx_focus_start').on(t.userId, t.startAt)],
+);
 
 // ---------------------------------------------------------------- calendar
 
@@ -365,10 +400,11 @@ export const LEDGER_REASONS = [
   'reversal',
   'manual_adjust',
   'meal_eaten',
+  'focus_done',
 ] as const;
 export type LedgerReason = (typeof LEDGER_REASONS)[number];
 
-export const LEDGER_REF_TYPES = ['habit', 'task', 'workout_session', 'day', 'reward', 'meal'] as const;
+export const LEDGER_REF_TYPES = ['habit', 'task', 'workout_session', 'day', 'reward', 'meal', 'focus'] as const;
 export type LedgerRefType = (typeof LEDGER_REF_TYPES)[number];
 
 /** APPEND-ONLY. Never UPDATE or DELETE a row; undo with a 'reversal' row. */
@@ -463,6 +499,8 @@ export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
 export type Challenge = typeof challenges.$inferSelect;
 export type NewChallenge = typeof challenges.$inferInsert;
+export type FocusSession = typeof focusSessions.$inferSelect;
+export type NewFocusSession = typeof focusSessions.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type EventReminder = typeof eventReminders.$inferSelect;

@@ -33,6 +33,14 @@ const SECTIONS: { title: string; hint?: string; fields: { key: Key; label: strin
     ],
   },
   {
+    title: 'Fókusz mód',
+    hint: 'A befejezett fókusz idő óránként fizet (arányosan), plusz minden „rajta vagyok” visszajelzés.',
+    fields: [
+      { key: 'focusPointsPerHour', label: 'Pont óránként' },
+      { key: 'focusCheckinPoint', label: 'Visszajelzés bónusza' },
+    ],
+  },
+  {
     title: 'Edzés',
     fields: [
       { key: 'workoutComplete', label: 'Új terv pontja' },

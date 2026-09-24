@@ -38,6 +38,8 @@ function copy(c: Celebration): { emoji: string; title: string; body: string } {
       };
     case 'milestone':
       return { emoji: '🔥', title: `${c.days} napos sorozat`, body: `${c.name} · +${c.bonus} bónusz` };
+    case 'focus':
+      return { emoji: '🎯', title: 'Fókusz megvolt!', body: `${c.title} · +${c.points} pont` };
   }
 }
 

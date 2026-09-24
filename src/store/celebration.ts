@@ -3,7 +3,8 @@ import { create } from 'zustand';
 export type Celebration =
   | { type: 'level'; level: number }
   | { type: 'perfect'; date: string; count: number }
-  | { type: 'milestone'; name: string; days: number; bonus: number };
+  | { type: 'milestone'; name: string; days: number; bonus: number }
+  | { type: 'focus'; title: string; points: number };
 
 interface CelebrationState {
   queue: Celebration[];

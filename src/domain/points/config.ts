@@ -24,6 +24,9 @@ export interface PointRules {
   workoutHalfPct: number; // >= this % → half points
   // challenges
   challengePoints: number; // default points for a NEW challenge in the pool
+  // focus mode
+  focusPointsPerHour: number; // points per hour of a finished focus session (pro rata)
+  focusCheckinPoint: number; // bonus per confirmed "still on it?" check-in
   // nutrition + day
   mealEaten: number; // points for ticking one PLANNED meal (ad-hoc entries earn nothing)
   perfectDayNeedsKcal: number; // 1 = the perfect-day bonus also needs the kcal goal (on days with meals logged), 0 = habits + tasks only
@@ -61,6 +64,8 @@ export const DEFAULT_RULES: PointRules = {
   workoutFullPct: 80,
   workoutHalfPct: 50,
   challengePoints: 15,
+  focusPointsPerHour: 20,
+  focusCheckinPoint: 2,
   mealEaten: 3,
   perfectDayNeedsKcal: 1,
   kcalGoalHit: 20,
@@ -99,6 +104,8 @@ export const RULE_RANGES: Record<keyof PointRules, Range> = {
   workoutFullPct: { min: 1, max: 100, integer: true },
   workoutHalfPct: { min: 0, max: 100, integer: true },
   challengePoints: { min: 0, max: 500, integer: true },
+  focusPointsPerHour: { min: 0, max: 500, integer: true },
+  focusCheckinPoint: { min: 0, max: 100, integer: true },
   mealEaten: { min: 0, max: 500, integer: true },
   perfectDayNeedsKcal: { min: 0, max: 1, integer: true },
   kcalGoalHit: { min: 0, max: 500, integer: true },

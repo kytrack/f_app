@@ -17,7 +17,9 @@ import {
   updateChallenge,
   type ChallengeInput,
 } from '@/src/domain/challenges';
+import { activeFocus } from '@/src/domain/focus';
 import { getSettings } from '@/src/domain/settings';
+import { canAutoPrompt } from '@/src/notifications/taps';
 import { ROOT_KEY, useDomainMutation } from '../queries';
 
 export function useAllChallenges() {
@@ -53,31 +55,37 @@ export function useChallengeActions() {
 
 /**
  * Opens the mandatory daily draw on app open / foreground when it has not happened today.
- * Mount once (home screen). Runs before the capture prompt, which yields to it.
+ * Mount once (home screen). Runs before the capture prompt, which yields to it; yields
+ * itself to the focus screen and to any screen a notification tap just opened.
  */
 export function useChallengePrompt() {
   const ctx = useDomain();
   const qc = useQueryClient();
-  const busy = useRef(false);
+  const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const check = () => {
-      if (busy.current) return;
-      busy.current = true;
-      try {
-        const row = getSettings(ctx);
-        if (!row.onboardedAt) return;
-        if (!shouldDrawToday(ctx, row.lastChallengeDay)) return;
-        qc.invalidateQueries({ queryKey: [...ROOT_KEY, 'draw'] });
-        setTimeout(() => router.push({ pathname: '/challenge', params: { mode: 'daily' } }), 500);
-      } catch (e) {
-        console.warn('challenge prompt check failed', e);
-      } finally {
-        busy.current = false;
-      }
+      if (pending.current) clearTimeout(pending.current);
+      pending.current = setTimeout(() => {
+        pending.current = null;
+        try {
+          const row = getSettings(ctx);
+          if (!row.onboardedAt) return;
+          if (!canAutoPrompt()) return;
+          if (ctx.settings.focusAutoOpen && activeFocus(ctx)) return;
+          if (!shouldDrawToday(ctx, row.lastChallengeDay)) return;
+          qc.invalidateQueries({ queryKey: [...ROOT_KEY, 'draw'] });
+          router.push({ pathname: '/challenge', params: { mode: 'daily' } });
+        } catch (e) {
+          console.warn('challenge prompt check failed', e);
+        }
+      }, 700);
     };
     check();
     const sub = AppState.addEventListener('change', (s) => s === 'active' && check());
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+      if (pending.current) clearTimeout(pending.current);
+    };
   }, [ctx, qc]);
 }

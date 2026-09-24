@@ -134,6 +134,9 @@ function RootLayoutNav() {
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false, contentStyle: { backgroundColor: p.canvas } }} />
         <Stack.Screen name="capture" options={{ presentation: 'modal' }} />
         <Stack.Screen name="challenge" options={{ presentation: 'modal', headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="focus/[id]" options={{ presentation: 'modal', headerShown: false }} />
+        <Stack.Screen name="focus/edit" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="admin/focus" />
         <Stack.Screen name="admin/challenges" />
         <Stack.Screen name="admin/index" />
         <Stack.Screen name="admin/habits" />

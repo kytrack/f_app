@@ -64,6 +64,13 @@
       "when": 1790155229057,
       "tag": "0008_low_meteorite",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1790243649329,
+      "tag": "0009_overconfident_paper_doll",
+      "breakpoints": true
     }
   ]
 }

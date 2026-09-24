@@ -11,12 +11,15 @@ import { useToday } from '@/src/features/today/useToday';
 import { useSettings } from '@/src/features/settings/useSettings';
 import { useCapturePrompt } from '@/src/features/capture/useCapturePrompt';
 import { useChallengePrompt } from '@/src/features/challenges/useChallenges';
+import { FocusCard } from '@/src/features/focus/FocusCard';
+import { useFocusPrompt } from '@/src/features/focus/useFocus';
 import { Card, EmptyState, IconButton, SectionTitle } from '@/src/ui/primitives';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function TodayScreen() {
   useDayClose();
+  useFocusPrompt();
   useChallengePrompt();
   useCapturePrompt();
   const { data, isLoading, refetch, isRefetching } = useToday();
@@ -54,6 +57,7 @@ export default function TodayScreen() {
           <Text className="text-sm font-semibold text-accent dark:text-accent-dark">+</Text>
         </Pressable>
       </Link>
+      <FocusCard />
       <PointsHeader todayNet={points.net} />
 
       <SectionTitle

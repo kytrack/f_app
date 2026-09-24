@@ -29,6 +29,9 @@ export type SettingsPatch = Partial<
     | 'challengesEnabled'
     | 'challengeChoices'
     | 'lastChallengeDay'
+    | 'notifFocus'
+    | 'focusAutoOpen'
+    | 'focusCheckinMinutes'
     | 'modCalendar'
     | 'modWorkout'
     | 'modMeals'
@@ -63,6 +66,11 @@ export function updateSettings(ctx: DomainCtx, patch: SettingsPatch): Settings {
   if (patch.capturesPerDay !== undefined && (patch.capturesPerDay < 0 || patch.capturesPerDay > 6)) throw bad('capturesPerDay');
   if (patch.captureOnOpenHours !== undefined && (patch.captureOnOpenHours < 0 || patch.captureOnOpenHours > 48))
     throw bad('captureOnOpenHours');
+  if (
+    patch.focusCheckinMinutes !== undefined &&
+    (!Number.isInteger(patch.focusCheckinMinutes) || patch.focusCheckinMinutes < 0 || patch.focusCheckinMinutes > 180)
+  )
+    throw bad('focusCheckinMinutes');
   for (const k of ['quietFrom', 'quietTo', 'summaryTime'] as const) {
     const v = patch[k];
     if (v !== undefined && !HHMM.test(v)) throw bad(k);

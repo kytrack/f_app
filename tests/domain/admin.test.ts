@@ -196,7 +196,7 @@ describe('admin', () => {
 
     wipeData(w.ctx, 'everything');
     expect(adminCounts(w.ctx)).toEqual({
-      habits: 0, habitsArchived: 0, taskTemplates: 0, tasksOpen: 0, events: 0, rewards: 0, plans: 0, exercises: 0, mealTemplates: 0, challenges: 0, ledgerEntries: 0,
+      habits: 0, habitsArchived: 0, taskTemplates: 0, tasksOpen: 0, events: 0, rewards: 0, plans: 0, exercises: 0, mealTemplates: 0, challenges: 0, focusOpen: 0, ledgerEntries: 0,
     });
     expect(getProfile(w.ctx).timezone).toBe('Europe/Budapest'); // settings survive
   });
