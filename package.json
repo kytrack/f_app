@@ -64,7 +64,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "postinstall": "patch-package",
     "phone:build": "eas build --platform android --profile preview",
-    "phone:update": "eas update --channel preview --environment preview --message"
+    "phone:update": "eas update --channel preview --environment preview --message",
+    "friends:update": "node scripts/friends-update.js"
   },
   "private": true
 }

@@ -60,3 +60,27 @@ nem kapja meg az új frissítéseket. Sima képernyő-, logika-, szöveg- és st
 
 Az adatbázis a telefonon él. APK-frissítés és OTA-frissítés **nem törli**, az app eltávolítása igen.
 Előtte: Vezérlőpult → Mentés és visszaállítás → adatbázis mentése.
+
+## C) Haveroknak iPhone-ra – Expo Go, ingyen, gép nélkül
+
+Igazi App Store-os / TestFlight-os telepítéshez Apple Developer Program kellene (évi 99 USD). Helyette az
+Expo Go tölti be a publikált appot az Expo szerveréről: letöltés után offline is fut, a gépnek nem kell mennie.
+
+**Nekik (egyszer):**
+1. App Store → **Expo Go** telepítése.
+2. Az alábbi linket megnyitni (vagy a `docs/friends-qr.png` QR-kódot beolvasni a Kamerával):
+   `exp://u.expo.dev/c7a649e9-ca93-48dc-9d8e-f78bb6fcb765?channel-name=friends&runtime-version=exposdk:57.0.0`
+3. Az első betöltéshez net kell; utána az Expo Go kezdőlapján a *Recently opened* alatt ott marad.
+4. Első megnyitáskor engedélyezni az értesítéseket (helyi, ütemezett értesítések – Expo Go-ban is mennek).
+
+**Neked, minden változtatás után:**
+
+```bash
+npm run friends:update -- "mit változtattam"
+```
+
+Ez ugyanaz a kód, mint a saját `phone:update`-ed, csak a `friends` csatornára és az Expo Go futtatókörnyezetére
+(`exposdk:57.0.0`, lásd `app.config.js`) publikálva. A haverok a következő megnyitáskor kapják meg.
+
+Korlátok: az ikon és az értesítés neve „Expo Go”; az adat a saját telefonjukon, az Expo Go-n belül él (az Expo Go
+törlésével elvész, a Mentés menüben lehet exportálni); Expo SDK-frissítés után nekik is frissíteniük kell az Expo Go-t.
