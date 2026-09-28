@@ -1,0 +1,1 @@
+ALTER TABLE `meal_templates` ADD `notes` text;

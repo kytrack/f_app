@@ -336,6 +336,7 @@ export const mealTemplates = sqliteTable('meal_templates', {
   carbsG: real('carbs_g'),
   fatG: real('fat_g'),
   defaultSlot: text('default_slot', { enum: MEAL_SLOTS }),
+  notes: text('notes'), // ingredients / how to make it (diet packs fill this in)
   archivedAt: text('archived_at'),
   deletedAt: text('deleted_at'),
   createdAt: text('created_at').notNull(),

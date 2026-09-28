@@ -475,6 +475,12 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 - **Pontok** csak `finishFocus`-ban, egy `focus_done` főkönyvi sorral (`ref_type=focus`): `round(eltelt perc / 60 × focusPointsPerHour)` + `checkinsDone × focusCheckinPoint` (alap 20/óra és 2). Az eltelt idő a tervezett hosszra van vágva (kései pipa nem fizet többet), a korai befejezés arányosan fizet. Visszajelzés csak futó blokk alatt, 5 percen belül egyszer számít. Lemondás: nincs pont, végleges. Befejezett blokk nem szerkeszthető és nem mondható le.
 - **Értesítés-koppintás**: a koppintást `request.identifier` szerint egyszer kezeljük (az app-indító koppintást az OS minden újrafeliratkozáskor visszaadta → a képernyő újra és újra megnyílt), és 15 másodpercre elnyomjuk az automatikus felugrókat (napi dobás, „van valami a fejedben?”), amik eddig a koppintás által nyitott képernyőre pakolták a saját lapjukat (ezért „akart új feljegyzést” egy határidő-értesítés). A felugrók `router.canDismiss()`-szel is ellenőrzik, hogy nincs-e már lap nyitva. Sorrend megnyitáskor: fókusz → napi dobás → kérdés.
 
+### 4.3l Étrend-csomag + recept az ételeken (2026-09-28, felhasználói kérés)
+
+- `meal_templates.notes`: hozzávalók + elkészítés. A napi sorokon (`MealRow`) a névre koppintva nyílik („▸ recept”), a `dayNutrition` a sablonból csatolja a naplóhoz (`DayMealLog`), mert a napló csak név/kcal pillanatképet tárol.
+- **Étrend-csomag** (`src/domain/dietPack.ts`, `/meal/diet`, link a Kaja fülön és a Vezérlő → Kaja alatt): előre megírt ételek + két váltakozó hét. `applyDietPack(ctx, id, week)` egy tranzakcióban: sablonok név szerint létrehozva/frissítve (archivált visszaáll), a teljes heti terv cserélve (`replaceWeekPlan`, a függő mai naplók a régi tételekkel mennek, a kipipáltak maradnak), kcal + makró célok beállítva. Újra futtatható, nem duplikál.
+- Első csomag, „Fogyás – csirke, rizs, bulgur”, 190 cm / 160 kg-ra: 2100 kcal, F 160 / Sz 215 / Zs 62 g. 46 étel (8 reggeli, 14 ebéd, 14 vacsora, 10 nasi), napi szerkezet reggeli + 2 nasi + ebéd + vacsora, A és B hét minden ebédje/vacsorája más. Nincs hal, bab, tökfőzelék. A teszt ellenőrzi, hogy minden nap a kcal-tolerancián belül van, ≥140 g fehérje, és a makrók összege 15%-on belül egyezik a kcal-lal.
+
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
 Futtatás: app fókuszba kerülésekor (`AppState 'active'`), plusz best-effort háttér-task. Minden `date` a **tegnapig** (helyi `day_start_hour` szerint), ami még nincs a `daily_summaries`-ben, időrendben:

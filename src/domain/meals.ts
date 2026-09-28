@@ -31,7 +31,7 @@ export const SLOT_LABEL: Record<MealSlot, string> = {
 // ---------------------------------------------------------------- templates
 
 export type MealTemplateInput = Pick<NewMealTemplate, 'name' | 'kcal'> &
-  Partial<Pick<NewMealTemplate, 'proteinG' | 'carbsG' | 'fatG' | 'defaultSlot'>>;
+  Partial<Pick<NewMealTemplate, 'proteinG' | 'carbsG' | 'fatG' | 'defaultSlot' | 'notes'>>;
 
 function validateTemplate(input: Partial<MealTemplateInput>): void {
   if (input.name !== undefined && !input.name.trim()) throw new DomainError('INVALID', 'name required');
@@ -268,6 +268,35 @@ export function removeFixedMeal(ctx: DomainCtx, templateId: string, slot: MealSl
   setFixedMealDays(ctx, templateId, slot, 0);
 }
 
+export interface WeekPlanInput {
+  weekday: number;
+  slot: MealSlot;
+  templateId: string;
+}
+
+/** Replaces the WHOLE weekly plan (all seven days) – diet packs use this. Pending logs go with the old items. */
+export function replaceWeekPlan(ctx: DomainCtx, items: WeekPlanInput[]): void {
+  for (const it of items) {
+    if (it.weekday < 0 || it.weekday > 6) throw new DomainError('INVALID', 'weekday 0..6');
+    if (!MEAL_SLOTS.includes(it.slot)) throw new DomainError('INVALID', 'bad slot');
+  }
+  ctx.db.transaction((tx) => {
+    const c = { ...ctx, db: tx };
+    const old = tx.select({ id: mealPlanItems.id }).from(mealPlanItems).where(eq(mealPlanItems.userId, c.userId)).all();
+    dropPendingLogs(c, old.map((o) => o.id));
+    tx.delete(mealPlanItems).where(eq(mealPlanItems.userId, c.userId)).run();
+    const order: Record<string, number> = {};
+    for (const it of items) {
+      const k = `${it.weekday}:${it.slot}`;
+      const sortOrder = order[k] ?? 0;
+      order[k] = sortOrder + 1;
+      tx.insert(mealPlanItems)
+        .values({ id: c.uuid(), userId: c.userId, weekday: it.weekday, slot: it.slot, templateId: it.templateId, sortOrder })
+        .run();
+    }
+  });
+}
+
 /** Copies one weekday's plan onto other weekdays (replacing theirs). */
 export function copyWeekday(ctx: DomainCtx, from: number, to: number[]): void {
   const source = weekPlan(ctx, from);
@@ -443,8 +472,11 @@ export interface DayNutrition {
   plannedCount: number;
   plannedEaten: number;
   targets: { proteinG: number | null; carbsG: number | null; fatG: number | null };
-  slots: { slot: MealSlot; label: string; logs: MealLog[] }[];
+  slots: { slot: MealSlot; label: string; logs: DayMealLog[] }[];
 }
+
+/** A day's log plus the template's recipe notes (snapshots do not carry them). */
+export type DayMealLog = MealLog & { notes: string | null };
 
 export function dayNutrition(ctx: DomainCtx, date: DayKey = todayKey(ctx)): DayNutrition {
   const logs = ctx.db
@@ -459,6 +491,13 @@ export function dayNutrition(ctx: DomainCtx, date: DayKey = todayKey(ctx)): DayN
   const plannedKcal = logs.reduce((a, l) => a + l.kcalSnapshot, 0);
   const planned = logs.filter((l) => l.planned);
   const row = ctx.db.select().from(settingsTable).where(eq(settingsTable.userId, ctx.userId)).get();
+  const templateIds = [...new Set(logs.map((l) => l.templateId).filter((id): id is string => !!id))];
+  const notesById = new Map(
+    templateIds.length
+      ? ctx.db.select({ id: mealTemplates.id, notes: mealTemplates.notes }).from(mealTemplates).where(inArray(mealTemplates.id, templateIds)).all().map((t) => [t.id, t.notes])
+      : [],
+  );
+  const withNotes = (l: MealLog): DayMealLog => ({ ...l, notes: l.templateId ? (notesById.get(l.templateId) ?? null) : null });
   return {
     date,
     target: ctx.settings.kcalTarget,
@@ -473,6 +512,6 @@ export function dayNutrition(ctx: DomainCtx, date: DayKey = todayKey(ctx)): DayN
     plannedCount: planned.length,
     plannedEaten: planned.filter((l) => l.eaten).length,
     targets: { proteinG: row?.proteinG ?? null, carbsG: row?.carbsG ?? null, fatG: row?.fatG ?? null },
-    slots: MEAL_SLOTS.map((slot) => ({ slot, label: SLOT_LABEL[slot], logs: logs.filter((l) => l.slot === slot) })),
+    slots: MEAL_SLOTS.map((slot) => ({ slot, label: SLOT_LABEL[slot], logs: logs.filter((l) => l.slot === slot).map(withNotes) })),
   };
 }

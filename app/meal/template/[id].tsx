@@ -15,9 +15,10 @@ const schema = z.object({
   carbs: z.coerce.number().min(0).max(2000).or(z.literal('')),
   fat: z.coerce.number().min(0).max(2000).or(z.literal('')),
   slot: z.enum(['any', 'breakfast', 'lunch', 'dinner', 'snack']),
+  notes: z.string().trim().max(2000),
 });
 type Form = z.infer<typeof schema>;
-const EMPTY: Form = { name: '', kcal: 0, protein: '', carbs: '', fat: '', slot: 'any' };
+const EMPTY: Form = { name: '', kcal: 0, protein: '', carbs: '', fat: '', slot: 'any', notes: '' };
 
 export default function MealTemplateFormScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,6 +37,7 @@ export default function MealTemplateFormScreen() {
         carbs: data.carbsG ?? '',
         fat: data.fatG ?? '',
         slot: data.defaultSlot ?? 'any',
+        notes: data.notes ?? '',
       });
     }
   }, [data]);
@@ -59,6 +61,7 @@ export default function MealTemplateFormScreen() {
       carbsG: num(v.carbs),
       fatG: num(v.fat),
       defaultSlot: v.slot === 'any' ? null : (v.slot as MealSlot),
+      notes: v.notes || null,
     };
     const opts = { onSuccess: () => router.back(), onError: (e: unknown) => notifyError(e, 'Nem sikerült') };
     if (isNew) createTpl.mutate(input, opts);
@@ -104,6 +107,15 @@ export default function MealTemplateFormScreen() {
           { value: 'dinner', label: 'Vacsora' },
           { value: 'snack', label: 'Nasi' },
         ]}
+      />
+      <Field
+        label="Recept / hozzávalók"
+        value={form.notes}
+        onChangeText={(t) => set('notes', t)}
+        multiline
+        numberOfLines={4}
+        placeholder="pl. 200 g csirkemell, 80 g rizs, 10 g olaj – grillserpenyőben"
+        error={errors.notes}
       />
       <Button title={isNew ? 'Létrehozás' : 'Mentés'} onPress={submit} disabled={createTpl.isPending || updateTpl.isPending} />
       {!isNew ? <Button title="Archiválás" variant="danger" className="mt-3" onPress={confirmArchive} /> : null}

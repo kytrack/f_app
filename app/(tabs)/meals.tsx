@@ -5,7 +5,7 @@ import { NutritionSummary } from '@/src/features/meals/NutritionSummary';
 import { useDayNutrition } from '@/src/features/meals/useMeals';
 import { Button, Card, IconButton, SectionTitle } from '@/src/ui/primitives';
 
-function QuickLink({ href, label }: { href: '/meal/fixed' | '/meal/templates' | '/meal/plan'; label: string }) {
+function QuickLink({ href, label }: { href: '/meal/fixed' | '/meal/templates' | '/meal/plan' | '/meal/diet'; label: string }) {
   return (
     <Link href={href} asChild>
       <Pressable className="flex-1 items-center rounded-xl border border-line/70 bg-surface py-2.5 active:opacity-70 dark:border-line-dark dark:bg-surface-dark">
@@ -35,6 +35,7 @@ export default function MealsScreen() {
         <QuickLink href="/meal/fixed" label="Fix kajáim" />
         <QuickLink href="/meal/templates" label="Ételek" />
         <QuickLink href="/meal/plan" label="Heti étrend" />
+        <QuickLink href="/meal/diet" label="Csomag" />
       </View>
 
       {!anyLogs ? (

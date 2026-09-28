@@ -127,6 +127,7 @@ function RootLayoutNav() {
         <Stack.Screen name="meal/templates" />
         <Stack.Screen name="meal/plan" />
         <Stack.Screen name="meal/fixed" />
+        <Stack.Screen name="meal/diet" />
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
         <Stack.Screen name="history" options={{ title: 'Pont-történet' }} />
         <Stack.Screen name="stats" />
