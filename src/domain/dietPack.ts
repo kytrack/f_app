@@ -128,6 +128,18 @@ const MEALS: DietMeal[] = [
   { key: 'V14', name: 'Pulyka-stroganoff bulgurral', slot: D, kcal: 520, p: 48, c: 44, f: 17,
     notes: '13 perc. 150 g pulykamell vékony csíkok + 150 g szeletelt gomba + hagyma 5 g olajon 8 perc, mustár, 80 g 12%-os tejföl, 2 perc. 50 g bulgur forró vízben 10 perc.' },
 
+  // ---------------------------------------------------------------- tortillás kaják (max 12 perc)
+  { key: 'RT1', name: 'Reggeli burrito tojással és csirkesonkával', slot: B, kcal: 425, p: 37, c: 29, f: 18,
+    notes: '7 perc. 2 tojás rántottának 50 g csirkesonkával és 80 g paprika + paradicsom kockával (4 perc). 1 teljes kiőrlésű tortillába (40 g) 30 g light sajttal és 30 g salsával feltekerve, száraz serpenyőben 1-1 perc, hogy összeragadjon.' },
+  { key: 'ET1', name: 'Csirkés gyros-wrap tzatzikivel + alma', slot: L, kcal: 665, p: 56, c: 73, f: 15,
+    notes: '12 perc. 180 g csirkemell csíkok gyros-fűszerrel 5 g olajon 8 perc. 2 teljes kiőrlésű tortilla (80 g), 100 g tzatziki (0%-os görög joghurt + reszelt uborka + fokhagyma), 150 g saláta + paradicsom + uborka. Feltekerve, 1 alma mellé.' },
+  { key: 'ET2', name: 'Marhás fajita tortillában', slot: L, kcal: 660, p: 52, c: 49, f: 27,
+    notes: '12 perc. 150 g sovány marha vékony csíkok + 150 g paprika + hagyma csíkok 5 g olajon fajita-fűszerrel, magas lángon 8 perc. 2 teljes kiőrlésű tortilla (80 g), 50 g 12%-os tejföl, 30 g light sajt, lime.' },
+  { key: 'VT1', name: 'Csirkés taco (3 db) salátával', slot: D, kcal: 615, p: 51, c: 51, f: 21,
+    notes: '12 perc. 150 g csirkemell apró kockák taco-fűszerrel 5 g olajon 7 perc. 3 kis tortilla (3×25 g) száraz serpenyőben 30-30 mp. Tölteni: csirke, 150 g saláta + paradicsom + 30 g kukorica, 40 g salsa, 50 g 12%-os tejföl, 20 g light sajt.' },
+  { key: 'VT2', name: 'Pulykás tortilla-pizza salátával', slot: D, kcal: 555, p: 41, c: 45, f: 21,
+    notes: '10 perc. 1 nagy teljes kiőrlésű tortilla (60 g) serpenyőben, rá 60 ml passata, 100 g pulykasonka vagy sült pulykacsík, 100 g paprika + gomba, 40 g light mozzarella, oregánó; fedő alatt 5 perc, míg a sajt megolvad. 150 g saláta 10 g olívaolajjal.' },
+
   // ---------------------------------------------------------------- nasik (0–2 perc)
   { key: 'N1', name: 'Alma + 25 g mandula', slot: S, kcal: 240, p: 5, c: 30, f: 12, notes: '1 közepes alma és egy maréknyi (25 g) natúr mandula.' },
   { key: 'N2', name: 'Skyr bogyós gyümölccsel', slot: S, kcal: 145, p: 17, c: 16, f: 0, notes: '150 g skyr vagy 0%-os görög joghurt, 100 g bogyós gyümölcs.' },
@@ -153,7 +165,7 @@ export const WEIGHT_LOSS_PACK: DietPack = {
   name: 'Fogyás – csirke, rizs, bulgur',
   description:
     '190 cm / 160 kg-ra méretezve: kb. 2100 kcal és 160 g fehérje naponta, ami mérsékelt, tartható deficit. Hal, bab és tökfőzelék nincs benne. ' +
-    'Minden étel legfeljebb 15 perc: egy serpenyő vagy a mikró, zacskós/előfőzött rizs, fagyasztott zöldség. Két, egymást váltó hét, naponta reggeli + 2 nasi + ebéd + vacsora; a receptben ott az idő is.',
+    'Minden étel legfeljebb 15 perc: egy serpenyő vagy a mikró, zacskós/előfőzött rizs, fagyasztott zöldség. Három, egymást váltó hét (a C hét a tortillás), naponta reggeli + 2 nasi + ebéd + vacsora; a receptben ott az idő is.',
   kcalTarget: 2100,
   proteinG: 160,
   carbsG: 215,
@@ -182,6 +194,18 @@ export const WEIGHT_LOSS_PACK: DietPack = {
         day('R7', 'N10', 'E9', 'N3', 'V4'),
         day('R4', 'N1', 'E12', 'N9', 'V8'),
         day('R1', 'N1', 'E8', 'N8', 'V2'),
+      ],
+    },
+    {
+      name: 'C hét',
+      days: [
+        day('RT1', 'N1', 'ET1', 'N3', 'V2'),
+        day('R2', 'N5', 'E10', 'N8', 'VT1'),
+        day('R6', 'N2', 'ET2', 'N3', 'V5'),
+        day('R7', 'N1', 'E12', 'N9', 'VT2'),
+        day('R8', 'N3', 'E5', 'N4', 'V13'),
+        day('R4', 'N1', 'E14', 'N7', 'V7'),
+        day('R1', 'N6', 'E1', 'N8', 'V12'),
       ],
     },
   ],

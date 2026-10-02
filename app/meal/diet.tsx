@@ -59,7 +59,7 @@ export default function DietPackScreen() {
         </View>
         <Button title={`${w.name} betöltése`} onPress={load} disabled={apply.isPending} />
         <Text className="mt-2 text-xs text-ink-muted dark:text-ink-dark-muted">
-          A két hét váltogatható: minden vasárnap betöltöd a másikat, így nem unod meg. Az ételek a listádban maradnak, a + gombbal
+          A heteket váltogasd: vasárnap betöltöd a következőt (A → B → C → A), így nem unod meg. Az ételek a listádban maradnak, a + gombbal
           bármelyik nap cserélhetsz.
         </Text>
       </Card>
