@@ -73,7 +73,7 @@ describe('applyDietPack', () => {
     const before = listTemplates(w.ctx).map((t) => t.id).sort();
     applyDietPack(w.ctx, WEIGHT_LOSS_PACK.id, 1);
     expect(listTemplates(w.ctx).map((t) => t.id).sort()).toEqual(before);
-    expect(weekPlan(w.ctx, 0).find((i) => i.slot === 'lunch')!.template.name).toBe('Csirkés-gombás rizottó');
+    expect(weekPlan(w.ctx, 0).find((i) => i.slot === 'lunch')!.template.name).toBe('Krémes csirkés-gombás rizs');
     expect(w.ctx.db.select().from(mealTemplates).all()).toHaveLength(WEIGHT_LOSS_PACK.meals.length);
   });
 

@@ -479,7 +479,7 @@ redeem(rewardId)  // TRANSACTION: re-read balance; if < cost throw; INSERT ledge
 
 - `meal_templates.notes`: hozzávalók + elkészítés. A napi sorokon (`MealRow`) a névre koppintva nyílik („▸ recept”), a `dayNutrition` a sablonból csatolja a naplóhoz (`DayMealLog`), mert a napló csak név/kcal pillanatképet tárol.
 - **Étrend-csomag** (`src/domain/dietPack.ts`, `/meal/diet`, link a Kaja fülön és a Vezérlő → Kaja alatt): előre megírt ételek + két váltakozó hét. `applyDietPack(ctx, id, week)` egy tranzakcióban: sablonok név szerint létrehozva/frissítve (archivált visszaáll), a teljes heti terv cserélve (`replaceWeekPlan`, a függő mai naplók a régi tételekkel mennek, a kipipáltak maradnak), kcal + makró célok beállítva. Újra futtatható, nem duplikál.
-- Első csomag, „Fogyás – csirke, rizs, bulgur”, 190 cm / 160 kg-ra: 2100 kcal, F 160 / Sz 215 / Zs 62 g. 46 étel (8 reggeli, 14 ebéd, 14 vacsora, 10 nasi), napi szerkezet reggeli + 2 nasi + ebéd + vacsora, A és B hét minden ebédje/vacsorája más. Nincs hal, bab, tökfőzelék. A teszt ellenőrzi, hogy minden nap a kcal-tolerancián belül van, ≥140 g fehérje, és a makrók összege 15%-on belül egyezik a kcal-lal.
+- Első csomag, „Fogyás – csirke, rizs, bulgur”, 190 cm / 160 kg-ra: 2100 kcal, F 160 / Sz 215 / Zs 62 g. 46 étel (8 reggeli, 14 ebéd, 14 vacsora, 10 nasi), mindegyik legfeljebb 15 perc alatt kész (serpenyő vagy mikró, zacskós/előfőzött rizs, fagyasztott zöldség; a recept az időt is írja), napi szerkezet reggeli + 2 nasi + ebéd + vacsora, A és B hét minden ebédje/vacsorája más. Nincs hal, bab, tökfőzelék. A teszt ellenőrzi, hogy minden nap a kcal-tolerancián belül van, ≥140 g fehérje, és a makrók összege 15%-on belül egyezik a kcal-lal.
 
 ### 4.4 Napzárás (`domain/dayClose.ts`)
 
