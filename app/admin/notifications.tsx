@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useDomain } from '@/src/db/domain';
 import { planNotifications, spreadOverActiveWindow } from '@/src/domain/notifications';
+import { isAndroid, openAppSettings, openExactAlarmSettings, requestIgnoreBatteryOptimizations } from '@/src/notifications/android';
 import { notificationsBlockedByExpoGo } from '@/src/notifications/module';
+import { isNativeNotifications, sendTestNotification } from '@/src/notifications/scheduler';
 import { useSettings, useSettingsActions } from '@/src/features/settings/useSettings';
-import { notifyError } from '@/src/ui/notify';
+import { notify, notifyError } from '@/src/ui/notify';
 import { Button, Card, Field, SectionTitle, Segmented } from '@/src/ui/primitives';
 
 type YesNo = 'yes' | 'no';
@@ -145,6 +147,49 @@ export default function NotificationSettingsScreen() {
       </Text>
 
       <Button title="Mentés" onPress={save} disabled={update.isPending} />
+
+      {isAndroid && isNativeNotifications ? (
+        <>
+          <SectionTitle>Ha kimaradnak az értesítések</SectionTitle>
+          <Card>
+            <Text className="mb-3 text-sm text-ink-muted dark:text-ink-dark-muted">
+              Az Android az akkumulátor miatt késlelteti vagy elnyeli a háttérben időzített értesítéseket. Két engedély kell, hogy
+              percre pontosan jöjjenek: „Riasztások és emlékeztetők” és korlátlan akkumulátor-használat. Ezek rendszer-beállítások,
+              az app csak odavisz.
+            </Text>
+            <Button
+              title="1. Riasztások és emlékeztetők engedélyezése"
+              variant="secondary"
+              onPress={() =>
+                void openExactAlarmSettings().then((ok) => ok || notify('Ehhez új APK kell', 'Telepítsd a legújabb buildet (npm run phone:build), ez a gomb abban működik.'))
+              }
+            />
+            <Button
+              title="2. Akkumulátor-korlátozás kikapcsolása"
+              variant="secondary"
+              className="mt-2"
+              onPress={() =>
+                void requestIgnoreBatteryOptimizations().then((ok) => ok || notify('Ehhez új APK kell', 'Telepítsd a legújabb buildet (npm run phone:build), ez a gomb abban működik.'))
+              }
+            />
+            <Button title="App beállításai a rendszerben" variant="ghost" className="mt-2" onPress={() => void openAppSettings()} />
+            <Text className="mt-3 text-xs text-ink-muted dark:text-ink-dark-muted">
+              Xiaomi / Redmi / POCO: az app beállításainál „Automatikus indítás” be, akkumulátor „Nincs korlátozás”. Samsung: Akkumulátor →
+              Háttérhasználati korlátok → az app ne legyen az „Alvó” vagy „Mélyen alvó” listán. Huawei: „Alkalmazásindítás” → kézi, mind a három
+              kapcsoló be. És ne töröld az appot a „legutóbbiak” listából közvetlenül egy várt értesítés előtt.
+            </Text>
+            <Button
+              title="Próba-értesítés 3 mp múlva"
+              variant="secondary"
+              className="mt-3"
+              onPress={() => sendTestNotification().catch((e) => notifyError(e, 'Nem sikerült'))}
+            />
+            <Text className="mt-2 text-xs text-ink-muted dark:text-ink-dark-muted">
+              Zárd be az appot a 3 másodperc alatt: ha így is megjön, a háttér-kézbesítés rendben van.
+            </Text>
+          </Card>
+        </>
+      ) : null}
     </ScrollView>
   );
 }

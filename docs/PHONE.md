@@ -53,7 +53,7 @@ Az app a **következő két indításnál** veszi át: az elsőnél letölti, a 
 ### Mikor kell mégis új APK (`npm run phone:build`)?
 
 Csak ha **natív** dolog változik: új natív csomag (`npx expo install valami`), `app.json` jogosultság/ikon/név,
-Expo SDK frissítés, vagy az `app.json` `version` mezője. Ilyenkor a `runtimeVersion` is lép, és a régi APK
+Expo SDK frissítés, vagy az `app.json` `version` mezője. (Ilyen volt 2026-10-03-án az exact-alarm engedélyek + expo-intent-launcher felvétele.) Ilyenkor a `runtimeVersion` is lép, és a régi APK
 nem kapja meg az új frissítéseket. Sima képernyő-, logika-, szöveg- és stílusváltozásnál elég a `phone:update`.
 
 ### Adatok
@@ -84,3 +84,15 @@ Ez ugyanaz a kód, mint a saját `phone:update`-ed, csak a `friends` csatornára
 
 Korlátok: az ikon és az értesítés neve „Expo Go”; az adat a saját telefonjukon, az Expo Go-n belül él (az Expo Go
 törlésével elvész, a Mentés menüben lehet exportálni); Expo SDK-frissítés után nekik is frissíteniük kell az Expo Go-t.
+
+## D) Ha kimaradnak az értesítések (Android)
+
+Az Android a háttérben időzített értesítéseket az akkumulátor miatt késlelteti, pontos riasztás csak engedéllyel jár.
+Az app a `SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM` engedélyeket kéri (ehhez a 2026-10-03 utáni APK kell), és a
+Vezérlő → Értesítések alján két gomb visz a rendszerbeállításokhoz:
+
+1. **Riasztások és emlékeztetők** → engedélyezve (Android 12+; e nélkül „pontatlan” riasztás megy, amit a Doze órákkal eltol).
+2. **Akkumulátor** → nincs korlátozás / optimalizálás kikapcsolva.
+
+Gyártói extrák: Xiaomi „Automatikus indítás”; Samsung „Alvó alkalmazások” listából kivenni; Huawei „Alkalmazásindítás” kézi.
+Ellenőrzés: Próba-értesítés gomb, és közben zárd be az appot.
