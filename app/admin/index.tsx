@@ -28,7 +28,7 @@ export default function AdminScreen() {
         <NavRow href="/admin/notifications" title="Értesítések" body="Lökések, kérdések, kapcsolók, csendes órák, összegző ideje." />
         <NavRow href="/admin/appearance" title="Megjelenés" body="Téma: a rendszerét követi, világos vagy sötét." />
         <NavRow href="/admin/modules" title="Modulok" body="Mely fülek látszanak: naptár, edzés, kaja, jutalmak." />
-        <NavRow href="/settings" title="Profil, nap, kalóriacél" body="Név, időzóna, napkezdet, szerkesztési ablak, kcal és makrók." />
+        <NavRow href="/settings" title="Beállítások" body="Minden kapcsoló egy helyen: téma, modulok, napi dobás, fókusz, értesítések, profil, kalóriacél." />
       </Card>
 
       <SectionTitle>Adatok</SectionTitle>

@@ -8,6 +8,7 @@ import { createEvent } from '@/src/domain/events';
 import { createTask } from '@/src/domain/tasks';
 import { useDomainMutation } from '@/src/features/queries';
 import { notifyError } from '@/src/ui/notify';
+import { addMinutesHHMM, DateField, DurationChips, TimeField } from '@/src/ui/DateTimeFields';
 import { Button, Card, Field, Segmented } from '@/src/ui/primitives';
 
 type Kind = 'task' | 'event' | 'note';
@@ -26,6 +27,8 @@ export default function CaptureScreen() {
   const [when, setWhen] = useState<When>('today');
   const [date, setDate] = useState(calendarKeyFor(ctx.now(), tz));
   const [time, setTime] = useState('18:00');
+  const [end, setEnd] = useState('19:00');
+  const [allDay, setAllDay] = useState<'no' | 'yes'>('no');
   const [error, setError] = useState<string | null>(null);
 
   const save = useDomainMutation(() => {
@@ -37,11 +40,15 @@ export default function CaptureScreen() {
       return createTask(ctx, { title, priority: 2, dueAt: key ? instantFor(key, time || '23:59', tz).toISOString() : null });
     }
     const day = key ?? calendarKeyFor(ctx.now(), tz);
+    if (allDay === 'yes') {
+      return createEvent(ctx, { title, startAt: instantFor(day, '00:00', tz).toISOString(), endAt: null, allDay: true, reminders: [1440] });
+    }
     const startAt = instantFor(day, time || '09:00', tz);
+    const endAt = end ? instantFor(day, end, tz) : new Date(startAt.getTime() + 60 * 60_000);
     return createEvent(ctx, {
       title,
       startAt: startAt.toISOString(),
-      endAt: new Date(startAt.getTime() + 60 * 60_000).toISOString(),
+      endAt: (endAt > startAt ? endAt : new Date(startAt.getTime() + 60 * 60_000)).toISOString(),
       reminders: [15],
     });
   });
@@ -96,17 +103,32 @@ export default function CaptureScreen() {
                 ...(kind === 'task' ? [{ value: 'none' as When, label: 'Bármikor' }] : []),
               ]}
             />
-            {when !== 'none' ? (
-              <View className="flex-row gap-3">
-                {when === 'date' ? (
-                  <View className="flex-1">
-                    <Field label="Dátum" value={date} onChangeText={setDate} placeholder="2026-09-15" />
-                  </View>
-                ) : null}
-                <View className="flex-1">
-                  <Field label="Idő" value={time} onChangeText={setTime} placeholder="18:00" />
-                </View>
-              </View>
+            {when === 'date' ? <DateField value={date} onChange={setDate} /> : null}
+            {kind === 'event' ? (
+              <Segmented
+                value={allDay}
+                onChange={setAllDay}
+                options={[
+                  { value: 'no', label: 'Időpontban' },
+                  { value: 'yes', label: 'Egész nap' },
+                ]}
+              />
+            ) : null}
+            {when !== 'none' && (kind !== 'event' || allDay === 'no') ? (
+              <TimeField
+                label={kind === 'event' ? 'Kezdés' : 'Határidő ideje'}
+                value={time}
+                onChange={(t) => {
+                  setTime(t);
+                  if (kind === 'event') setEnd(addMinutesHHMM(t, 60));
+                }}
+              />
+            ) : null}
+            {kind === 'event' && allDay === 'no' ? (
+              <>
+                <Text className="-mt-1 mb-1 text-sm font-medium text-ink dark:text-ink-dark">Meddig tart?</Text>
+                <DurationChips start={time} end={end} onChange={setEnd} />
+              </>
             ) : null}
           </>
         ) : (

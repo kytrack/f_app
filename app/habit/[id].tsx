@@ -6,6 +6,7 @@ import type { HabitInput } from '@/src/domain/habits';
 import { useRules } from '@/src/features/admin/useAdmin';
 import { useHabit, useHabitActions } from '@/src/features/habits/useHabits';
 import { confirm, notifyError } from '@/src/ui/notify';
+import { TimeField } from '@/src/ui/DateTimeFields';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
 
 const WEEKDAYS = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
@@ -231,13 +232,13 @@ export default function HabitFormScreen() {
       </View>
 
       {!isBad ? (
-        <Field
-          label="Emlékeztető (ÓÓ:PP)"
+        <TimeField
+          label="Emlékeztető ideje"
           value={form.reminderTime}
-          onChangeText={(t) => set('reminderTime', t)}
-          placeholder="21:00"
+          onChange={(t) => set('reminderTime', t)}
           hint="Üresen hagyva nincs értesítés. Csak az ütemezett napokon, és csak amíg nincs kipipálva."
           error={errors.reminderTime}
+          presets={['07:00', '08:00', '12:00', '18:00', '20:00', '21:00', '22:00']}
         />
       ) : null}
       <Button title={isNew ? 'Létrehozás' : 'Mentés'} onPress={submit} disabled={create.isPending || update.isPending} />

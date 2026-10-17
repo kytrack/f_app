@@ -8,6 +8,7 @@ import type { EventInput } from '@/src/domain/events';
 import { parseRecurrence } from '@/src/domain/recurrence';
 import { useEvent, useEventActions } from '@/src/features/calendar/useCalendar';
 import { confirm, notifyError } from '@/src/ui/notify';
+import { DateField, DurationChips, TimeField } from '@/src/ui/DateTimeFields';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
 import { EMPTY_RECURRENCE, fromRecurrence, RecurrencePicker, toRecurrence, type RecurrenceForm } from '@/src/ui/RecurrencePicker';
 
@@ -128,31 +129,22 @@ export default function EventFormScreen() {
         error={errors.title}
         autoFocus={isNew}
       />
-      <View className="flex-row gap-3">
-        <View className="flex-1">
-          <Field label="Dátum" value={form.date} onChangeText={(t) => set('date', t)} placeholder="2026-09-15" error={errors.date} />
-        </View>
-        <View className="flex-1">
-          <Segmented
-            label="Egész nap"
-            value={form.allDay}
-            onChange={(v) => set('allDay', v)}
-            options={[
-              { value: 'no', label: 'Nem' },
-              { value: 'yes', label: 'Igen' },
-            ]}
-          />
-        </View>
-      </View>
+      <DateField label="Nap" value={form.date} onChange={(t) => set('date', t)} error={errors.date} />
+      <Segmented
+        label="Mikor"
+        value={form.allDay}
+        onChange={(v) => set('allDay', v)}
+        options={[
+          { value: 'no', label: 'Időpontban' },
+          { value: 'yes', label: 'Egész nap' },
+        ]}
+      />
       {form.allDay === 'no' ? (
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Field label="Kezdés" value={form.start} onChangeText={(t) => set('start', t)} placeholder="09:00" error={errors.start} />
-          </View>
-          <View className="flex-1">
-            <Field label="Vége" value={form.end} onChangeText={(t) => set('end', t)} placeholder="10:00" error={errors.end} />
-          </View>
-        </View>
+        <>
+          <TimeField label="Kezdés" value={form.start} onChange={(t) => set('start', t)} error={errors.start} />
+          <Field label="Vége" value={form.end} onChangeText={(t) => set('end', t)} placeholder="10:00" error={errors.end} hint="Üresen: nincs vége megadva" />
+          <DurationChips start={form.start} end={form.end} onChange={(t) => set('end', t)} />
+        </>
       ) : null}
       <Field label="Helyszín" value={form.location} onChangeText={(t) => set('location', t)} placeholder="opcionális" />
       <RecurrencePicker value={recurrence} onChange={setRecurrence} />

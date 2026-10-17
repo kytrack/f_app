@@ -10,6 +10,7 @@ import type { TaskInput } from '@/src/domain/tasks';
 import { confirm, notifyError } from '@/src/ui/notify';
 import { useRules } from '@/src/features/admin/useAdmin';
 import { useTask, useTaskActions } from '@/src/features/tasks/useTasks';
+import { DateField, TimeField } from '@/src/ui/DateTimeFields';
 import { Button, Field, Segmented } from '@/src/ui/primitives';
 import { parseRecurrence } from '@/src/domain/recurrence';
 import { EMPTY_RECURRENCE, fromRecurrence, RecurrencePicker, toRecurrence, type RecurrenceForm } from '@/src/ui/RecurrencePicker';
@@ -152,24 +153,14 @@ export default function TaskFormScreen() {
           { value: 'custom', label: 'Dátum' },
         ]}
       />
+      {form.due === 'custom' ? <DateField value={form.customDate} onChange={(t) => set('customDate', t)} error={errors.customDate} /> : null}
       {form.due !== 'none' ? (
-        <View className="flex-row gap-3">
-          {form.due === 'custom' ? (
-            <View className="flex-1">
-              <Field
-                label="Dátum"
-                value={form.customDate}
-                onChangeText={(t) => set('customDate', t)}
-                placeholder="2026-09-15"
-                error={errors.customDate}
-              />
-            </View>
-          ) : null}
-          <View className="flex-1">
-            <Field label="Idő" value={form.time} onChangeText={(t) => set('time', t)} placeholder="18:00" error={errors.time} />
-          </View>
-        </View>
-      ) : null}
+        <TimeField label="Határidő ideje" value={form.time} onChange={(t) => set('time', t)} error={errors.time} hint="Egy órával előtte emlékeztetőt kapsz." />
+      ) : (
+        <Text className="-mt-2 mb-4 text-xs text-ink-muted dark:text-ink-dark-muted">
+          Határidő nélkül a teendő a Ma lista „bármikor” részén marad, és nem jár érte lejárat-levonás. Idő kell? Válassz napot fent.
+        </Text>
+      )}
       <RecurrencePicker value={recurrence} onChange={setRecurrence} error={errors.due} />
       {recurrence.kind !== 'none' ? (
         <Text className="mb-4 text-xs text-ink-muted dark:text-ink-dark-muted">

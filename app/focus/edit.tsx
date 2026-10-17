@@ -7,6 +7,7 @@ import { MAX_CHECKIN_MINUTES, MAX_FOCUS_HOURS, type FocusInput } from '@/src/dom
 import { useRules } from '@/src/features/admin/useAdmin';
 import { useFocusActions, useFocusSession } from '@/src/features/focus/useFocus';
 import { notifyError } from '@/src/ui/notify';
+import { DateField, DurationChips, TimeField } from '@/src/ui/DateTimeFields';
 import { Button, Card, Field } from '@/src/ui/primitives';
 import { Chip } from '@/src/ui/admin';
 
@@ -99,15 +100,10 @@ export default function FocusEditScreen() {
             <Chip label="Most 2 óra" onPress={() => startNow(120)} />
           </View>
         ) : null}
-        <Field label="Nap" value={date} onChangeText={setDate} placeholder="2026-09-24" error={errors.date} />
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Field label="Ettől" value={from} onChangeText={setFrom} placeholder="14:00" error={errors.from} />
-          </View>
-          <View className="flex-1">
-            <Field label="Eddig" value={to} onChangeText={setTo} placeholder="16:00" error={errors.to} />
-          </View>
-        </View>
+        <DateField label="Nap" value={date} onChange={setDate} error={errors.date} />
+        <TimeField label="Ettől" value={from} onChange={(t) => { setFrom(t); setTo(addMinutes(t, 60)); }} error={errors.from} />
+        <Field label="Eddig" value={to} onChangeText={setTo} placeholder="16:00" error={errors.to} />
+        <DurationChips start={from} end={to} onChange={setTo} />
         <Field
           label="Visszakérdezés (perc)"
           keyboardType="number-pad"

@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import { hu } from 'date-fns/locale';
-import { Link, Redirect } from 'expo-router';
+import { Link, Redirect, type Href } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useDayClose } from '@/src/features/dayclose/useDayClose';
 import { HabitRow } from '@/src/features/habits/HabitRow';
@@ -16,6 +16,16 @@ import { useFocusPrompt } from '@/src/features/focus/useFocus';
 import { Card, EmptyState, IconButton, SectionTitle } from '@/src/ui/primitives';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+function QuickAction({ href, label }: { href: Href; label: string }) {
+  return (
+    <Link href={href} asChild>
+      <Pressable className="flex-1 items-center rounded-xl border border-line/70 bg-surface py-2.5 active:opacity-70 dark:border-line-dark dark:bg-surface-dark">
+        <Text className="text-sm font-semibold text-accent dark:text-accent-dark">{label}</Text>
+      </Pressable>
+    </Link>
+  );
+}
 
 export default function TodayScreen() {
   useDayClose();
@@ -57,6 +67,11 @@ export default function TodayScreen() {
           <Text className="text-sm font-semibold text-accent dark:text-accent-dark">+</Text>
         </Pressable>
       </Link>
+      <View className="mb-3 flex-row gap-2">
+        <QuickAction href={{ pathname: '/task/[id]', params: { id: 'new' } }} label="✓ Teendő" />
+        <QuickAction href={{ pathname: '/event/[id]', params: { id: 'new' } }} label="📅 Esemény" />
+        <QuickAction href={{ pathname: '/focus/edit', params: { id: 'new' } }} label="🎯 Fókusz" />
+      </View>
       <FocusCard />
       <PointsHeader todayNet={points.net} />
 
